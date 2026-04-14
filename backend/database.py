@@ -4,6 +4,8 @@ from pymongo.errors import ConnectionFailure
 from config import MONGO_URI, DB_NAME
 import bcrypt
 from datetime import datetime
+import os
+print("DEBUG URI:", os.getenv("MONGO_URI"))
 
 class DatabaseManager:
     def __init__(self):
