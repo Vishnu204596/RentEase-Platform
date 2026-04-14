@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RentEase - Find Your Perfect Rental</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .property-image-large {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .amenity-badge {
+            background: #e2e8f0;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .booking-form-side {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            position: sticky;
+            top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="fas fa-home me-2"></i>
+                <span>RentEase</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li id="authLinks" class="nav-item"></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Search Section -->
+    <section class="search-section py-5">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h1>Find Your Perfect Rental</h1>
+                <p>Search for homes, PGs, apartments, and villas with ease</p>
+            </div>
+
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-8">
+                    <input type="text" id="searchBox" class="form-control form-control-lg"
+                        placeholder="Search by location, property name...">
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Filter Properties</h5>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="typeFilter" class="form-label">Property Type</label>
+                                    <select class="form-select" id="typeFilter">
+                                        <option value="">All Types</option>
+                                        <option value="apartment">Apartment</option>
+                                        <option value="pg">PG</option>
+                                        <option value="villa">Villa</option>
+                                        <option value="house">House</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="bedrooms" class="form-label">Bedrooms</label>
+                                    <select class="form-select" id="bedrooms">
+                                        <option value="">Any</option>
+                                        <option value="1">1 BHK</option>
+                                        <option value="2">2 BHK</option>
+                                        <option value="3">3 BHK</option>
+                                        <option value="4">4+ BHK</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="priceMin" class="form-label">Min Price (₹)</label>
+                                    <input type="number" class="form-control" id="priceMin" placeholder="0" min="0">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="priceMax" class="form-label">Max Price (₹)</label>
+                                    <input type="number" class="form-control" id="priceMax" placeholder="50000" min="0">
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button class="btn btn-outline-secondary w-100"
+                                        onclick="clearFilters()">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Property Listings -->
+    <section class="property-listings py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Available Properties</h2>
+            <div id="propertyContainer" class="row"></div>
+        </div>
+    </section>
+
+    <!-- Property Details Modal - Unified -->
+    <div id="propertyModal" class="modal property-detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-building me-2"></i>
+                    <span>Property Details</span>
+                </h3>
+                <button class="modal-close" onclick="closePropertyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Left Column - Property Details -->
+                    <div class="col-lg-7 col-md-12">
+                        <!-- Main Image -->
+                        <img id="modalImage" src="" alt="Property" class="property-image-large">
+
+                        <!-- Property Info -->
+                        <div class="mt-4">
+                            <h2 id="modalPropertyTitle" style="color: var(--primary-color);"></h2>
+                            <p class="text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <span id="modalLocation"></span>
+                            </p>
+
+                            <div class="row mt-3">
+                                <div class="col-4">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-bed fa-2x text-primary"></i>
+                                        <p class="mt-2 mb-0"><strong id="modalBedrooms"></strong> Bedrooms</p>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-bath fa-2x text-primary"></i>
+                                        <p class="mt-2 mb-0"><strong id="modalBathrooms"></strong> Bathrooms</p>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <i class="fas fa-rupee-sign fa-2x text-primary"></i>
+                                        <p class="mt-2 mb-0"><strong>₹<span id="modalPrice"></span></strong>/month</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            <div class="mt-4">
+                                <h5><i class="fas fa-tags me-2"></i> Amenities</h5>
+                                <div class="amenities-list" id="modalAmenities"></div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mt-4">
+                                <h5><i class="fas fa-align-left me-2"></i> Description</h5>
+                                <p id="modalDescription" style="line-height: 1.8;"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Booking Form -->
+                    <div class="col-lg-5 col-md-12">
+                        <div class="booking-form-side">
+                            <h5><i class="fas fa-calendar-alt me-2"></i> Request a Visit</h5>
+                            <form id="bookingRequestForm">
+                                <input type="hidden" id="bookingPropertyId">
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-calendar-day me-1"></i> Preferred Visit Date *</label>
+                                    <input type="date" id="visitDate" class="form-control" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-clock me-1"></i> Preferred Visit Time *</label>
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <select id="visitTimeHour" class="form-select" required>
+                                                <option value="">Hour</option>
+                                                <option value="01">01</option>
+                                                <option value="02">02</option>
+                                                <option value="03">03</option>
+                                                <option value="04">04</option>
+                                                <option value="05">05</option>
+                                                <option value="06">06</option>
+                                                <option value="07">07</option>
+                                                <option value="08">08</option>
+                                                <option value="09">09</option>
+                                                <option value="10">10</option>
+                                                <option value="11">11</option>
+                                                <option value="12">12</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-4">
+                                            <select id="visitTimeMinute" class="form-select" required>
+                                                <option value="">Min</option>
+                                                <option value="00">00</option>
+                                                <option value="15">15</option>
+                                                <option value="30">30</option>
+                                                <option value="45">45</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-3">
+                                            <select id="visitTimeAmPm" class="form-select">
+                                                <option value="AM">AM</option>
+                                                <option value="PM">PM</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i class="fas fa-comment me-1"></i> Message to Owner</label>
+                                    <textarea id="visitMessage" class="form-control" rows="4"
+                                        placeholder="Any specific questions or requirements?&#10;Example:&#10;- Is parking available?&#10;- What about water supply?&#10;- Nearby amenities?"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn-primary mt-3">
+                                    <i class="fas fa-paper-plane me-2"></i> Send Visit Request
+                                </button>
+                            </form>
+
+                            <hr class="my-4">
+
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-shield-alt me-1"></i>
+                                    Your request will be reviewed by the property owner
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>RentEase</h3>
+                <p>Your trusted partner for finding the perfect rental property.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Info</h4>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Rental Street, City</p>
+                <p><i class="fas fa-phone"></i> +91 12345 67890</p>
+                <p><i class="fas fa-envelope"></i> support@rentease.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span id="currentYear"></span> RentEase. All Rights Reserved.</p>
+        </div>
+
+        <script>
+            document.getElementById('currentYear').innerHTML = new Date().getFullYear();
+        </script>
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/booking-modal.js"></script>
+</body>
+
+</html>
