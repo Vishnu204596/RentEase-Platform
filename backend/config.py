@@ -1,11 +1,12 @@
 import os
-from dotenv import load_dotenv
 from datetime import timedelta
 
+# ONLY load .env in local (optional)
+from dotenv import load_dotenv
 load_dotenv()
 
 # MongoDB
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://host.docker.internal:27017/")
+MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME", "rental_booking_db")
 
 # JWT

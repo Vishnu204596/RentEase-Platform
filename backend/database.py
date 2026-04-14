@@ -9,13 +9,15 @@ print("DEBUG URI:", os.getenv("MONGO_URI"))
 
 class DatabaseManager:
     def __init__(self):
+        if not MONGO_URI:
+            raise ValueError("❌ MONGO_URI is not set in environment variables")
+
         try:
             self.client = MongoClient(MONGO_URI)
-            # Check connection
             self.client.admin.command('ping')
             print("✅ Connected to MongoDB successfully!")
         except ConnectionFailure:
-            print("❌ MongoDB connection failed. Make sure MongoDB is running.")
+            print("❌ MongoDB connection failed.")
             raise
         
         self.db = self.client[DB_NAME]
