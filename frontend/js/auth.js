@@ -1,5 +1,5 @@
 if (typeof API_BASE === 'undefined') {
-    var API_BASE = 'http://localhost:5000/api';
+    var API_BASE = '/api';
 }
 
 async function handleLogin(email, password) {
