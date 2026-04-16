@@ -12,7 +12,7 @@ const DEFAULT_PROPERTIES = [
         available: true,
         description: "Beautiful 2BHK apartment with modern amenities",
         images: {
-            main: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400",
+            main: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?w=400",
             gallery: []
         }
     },
@@ -27,7 +27,7 @@ const DEFAULT_PROPERTIES = [
         available: true,
         description: "Perfect PG for students and working professionals",
         images: {
-            main: "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400",
+            main: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?w=400",
             gallery: []
         }
     },
@@ -42,7 +42,7 @@ const DEFAULT_PROPERTIES = [
         available: true,
         description: "Luxury villa with garden and private pool",
         images: {
-            main: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=400",
+            main: "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?w=400",
             gallery: []
         }
     }
