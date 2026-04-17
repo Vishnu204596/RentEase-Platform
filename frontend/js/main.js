@@ -107,7 +107,7 @@ function updateNavbar() {
     authLinks.innerHTML = '';
     
     if (user && isLoggedIn()) {
-        // Add Dashboard link as list item
+        // Add Dashboard link - using same structure as Home link
         const dashboardLink = document.createElement('li');
         dashboardLink.className = 'nav-item';
         dashboardLink.innerHTML = `
@@ -117,13 +117,13 @@ function updateNavbar() {
         `;
         authLinks.appendChild(dashboardLink);
         
-        // Add User Dropdown as list item
+        // Add User Dropdown - properly aligned
         const dropdownItem = document.createElement('li');
         dropdownItem.className = 'nav-item dropdown';
         dropdownItem.innerHTML = `
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fas fa-user-circle me-1"></i> 
-                <span>${user.name.length > 12 ? user.name.substring(0, 10) + '...' : user.name}</span>
+                <span>${user.name.length > 15 ? user.name.substring(0, 12) + '...' : user.name}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><h6 class="dropdown-header">Signed in as</h6></li>
