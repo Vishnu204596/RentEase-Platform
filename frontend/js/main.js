@@ -99,15 +99,17 @@ window.logout = function() {
 
 function updateNavbar() {
     const user = getCurrentUser();
-    const authLinks = document.getElementById('authLinks');
+    const navLinks = document.getElementById('navLinks');
     
-    if (!authLinks) return;
+    if (!navLinks) return;
     
-    // Clear existing content
-    authLinks.innerHTML = '';
+    // Remove existing dynamic links (keep only the Home link)
+    while (navLinks.children.length > 1) {
+        navLinks.removeChild(navLinks.lastChild);
+    }
     
     if (user && isLoggedIn()) {
-        // Add Dashboard link - using same structure as Home link
+        // Add Dashboard link
         const dashboardLink = document.createElement('li');
         dashboardLink.className = 'nav-item';
         dashboardLink.innerHTML = `
@@ -115,9 +117,9 @@ function updateNavbar() {
                 <i class="fas fa-tachometer-alt me-1"></i> Dashboard
             </a>
         `;
-        authLinks.appendChild(dashboardLink);
+        navLinks.appendChild(dashboardLink);
         
-        // Add User Dropdown - properly aligned
+        // Add User Dropdown
         const dropdownItem = document.createElement('li');
         dropdownItem.className = 'nav-item dropdown';
         dropdownItem.innerHTML = `
@@ -138,7 +140,7 @@ function updateNavbar() {
                 </a></li>
             </ul>
         `;
-        authLinks.appendChild(dropdownItem);
+        navLinks.appendChild(dropdownItem);
         
     } else {
         // Add Login link
@@ -149,7 +151,7 @@ function updateNavbar() {
                 <i class="fas fa-sign-in-alt me-1"></i> Login
             </a>
         `;
-        authLinks.appendChild(loginLink);
+        navLinks.appendChild(loginLink);
         
         // Add Register link
         const registerLink = document.createElement('li');
@@ -159,7 +161,7 @@ function updateNavbar() {
                 <i class="fas fa-user-plus me-1"></i> Register
             </a>
         `;
-        authLinks.appendChild(registerLink);
+        navLinks.appendChild(registerLink);
     }
 }
 
