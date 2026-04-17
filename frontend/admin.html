@@ -227,15 +227,31 @@
                         <label>Title</label>
                         <input type="text" id="editTitle" name="title" class="form-control" required>
                     </div>
+
+                    <!-- Add this inside the edit modal form -->
                     <div class="form-group">
-                        <label>Type</label>
-                        <select id="editType" name="type" class="form-select" required>
-                            <option value="apartment">Apartment</option>
-                            <option value="pg">PG</option>
-                            <option value="villa">Villa</option>
-                            <option value="house">House</option>
+                        <label>Description</label>
+                        <textarea id="editDescription" name="description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Amenities (hold Ctrl to select multiple)</label>
+                        <select id="editAmenities" name="amenities" multiple class="form-select">
+                            <option value="AC">AC</option>
+                            <option value="WiFi">WiFi</option>
+                            <option value="Parking">Parking</option>
+                            <option value="Gym">Gym</option>
+                            <option value="Pool">Swimming Pool</option>
+                            <option value="Security">24/7 Security</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label>Current Gallery Images</label>
+                        <div id="currentGallery"></div>
+                    </div>
+
+
                     <div class="form-group">
                         <label>Location</label>
                         <input type="text" id="editLocation" name="location" class="form-control" required>

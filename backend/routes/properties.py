@@ -108,6 +108,75 @@ def add_property():
         print(f"Error adding property: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
+@properties_bp.route('/<property_id>', methods=['PUT'])
+@admin_required
+def edit_property(property_id):
+    """Edit property with binary image handling"""
+    try:
+        # Get existing property
+        existing = db.properties.find_one({'_id': ObjectId(property_id)})
+        if not existing:
+            return jsonify({'success': False, 'error': 'Property not found'}), 404
+        
+        # Update text fields
+        update_data = {}
+        updatable_fields = ['title', 'type', 'location', 'price', 'bedrooms', 'bathrooms', 'amenities', 'available', 'description']
+        
+        for field in updatable_fields:
+            if field in request.form:
+                if field in ['price', 'bedrooms', 'bathrooms']:
+                    update_data[field] = float(request.form[field]) if field == 'price' else int(request.form[field])
+                elif field == 'amenities':
+                    update_data[field] = request.form.getlist(field)
+                else:
+                    update_data[field] = request.form[field]
+        
+        # Handle main image update
+        if 'main_image' in request.files and request.files['main_image'].filename:
+            # Save new main image to database
+            new_main = save_image_to_db(request.files['main_image'], "main_")
+            if new_main:
+                update_data['images.main'] = new_main
+        
+        # Handle new gallery images
+        if 'gallery_images' in request.files:
+            new_gallery = request.files.getlist('gallery_images')
+            existing_gallery = existing['images'].get('gallery', [])
+            
+            for img in new_gallery:
+                if img and img.filename:
+                    img_data = save_image_to_db(img, "gallery_")
+                    if img_data:
+                        existing_gallery.append(img_data)
+            
+            update_data['images.gallery'] = existing_gallery
+        
+        # Delete specific gallery images (by index)
+        if 'delete_gallery_indices' in request.form:
+            to_delete_indices = request.form.getlist('delete_gallery_indices')
+            existing_gallery = existing['images'].get('gallery', [])
+            
+            # Convert to list of indices to delete (as integers)
+            indices_to_delete = [int(idx) for idx in to_delete_indices if idx.isdigit()]
+            
+            # Create new gallery without deleted indices
+            new_gallery = [img for idx, img in enumerate(existing_gallery) if idx not in indices_to_delete]
+            
+            update_data['images.gallery'] = new_gallery
+        
+        # Update in database
+        if update_data:
+            db.properties.update_one(
+                {'_id': ObjectId(property_id)},
+                {'$set': update_data}
+            )
+        
+        return jsonify({"success": True, "message": "Property updated successfully!"}), 200
+        
+    except Exception as e:
+        print(f"Error editing property: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @properties_bp.route('/image/<property_id>', methods=['GET'])
 def get_property_image(property_id):
     """Serve image from MongoDB"""
@@ -230,6 +299,30 @@ def delete_property(property_id):
             return jsonify({'success': False, 'error': 'Property not found'}), 404
         
         return jsonify({"success": True, "message": "Property deleted successfully!"}), 200
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@properties_bp.route('/toggle-availability/<property_id>', methods=['PATCH'])
+@admin_required
+def toggle_availability(property_id):
+    """Toggle property availability"""
+    try:
+        property_data = db.properties.find_one({'_id': ObjectId(property_id)})
+        if not property_data:
+            return jsonify({'success': False, 'error': 'Property not found'}), 404
+        
+        new_status = not property_data.get('available', True)
+        db.properties.update_one(
+            {'_id': ObjectId(property_id)},
+            {'$set': {'available': new_status}}
+        )
+        
+        return jsonify({
+            "success": True,
+            "message": f"Property {'available' if new_status else 'unavailable'} now",
+            "available": new_status
+        }), 200
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

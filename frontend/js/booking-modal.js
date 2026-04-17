@@ -1,10 +1,12 @@
+// frontend/js/booking-modal.js
 let currentProperty = null;
-
 
 window.showPropertyDetails = async (propertyId) => {
     console.log('showPropertyDetails called with id:', propertyId);
     
     const token = localStorage.getItem('token');
+    const user = getCurrentUser();
+    
     if (!token) {
         showToast('Please login to view property details', 'warning');
         setTimeout(() => {
@@ -21,18 +23,22 @@ window.showPropertyDetails = async (propertyId) => {
             currentProperty = data.property;
             
             let hasPendingBooking = false;
-            try {
-                const bookingsResponse = await fetch('/api/bookings/my', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const bookingsData = await bookingsResponse.json();
-                if (bookingsData.success) {
-                    hasPendingBooking = bookingsData.bookings.some(
-                        b => b.propertyId === propertyId && b.status === 'pending'
-                    );
+            let isAdmin = user && user.role === 'admin';
+            
+            if (!isAdmin) {
+                try {
+                    const bookingsResponse = await fetch('/api/bookings/my', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const bookingsData = await bookingsResponse.json();
+                    if (bookingsData.success) {
+                        hasPendingBooking = bookingsData.bookings.some(
+                            b => b.propertyId === propertyId && b.status === 'pending'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error checking pending booking:', error);
                 }
-            } catch (error) {
-                console.error('Error checking pending booking:', error);
             }
             
             const modalTitle = document.getElementById('modalTitle');
@@ -82,7 +88,22 @@ window.showPropertyDetails = async (propertyId) => {
             
             const bookingFormSide = document.querySelector('.booking-form-side');
             if (bookingFormSide) {
-                if (hasPendingBooking) {
+                // If user is admin, show admin message instead of booking form
+                if (isAdmin) {
+                    bookingFormSide.innerHTML = `
+                        <div class="text-center p-4">
+                            <i class="fas fa-crown fa-3x" style="color: #f59e0b;"></i>
+                            <h4 class="mt-3" style="color: #f59e0b;">Admin View Only</h4>
+                            <p>As an admin, you cannot book properties.</p>
+                            <p class="text-muted">You can manage this property from the admin dashboard.</p>
+                            <hr>
+                            <button class="btn-primary mt-2" onclick="closePropertyModal()">
+                                <i class="fas fa-arrow-left me-2"></i> Close
+                            </button>
+                        </div>
+                    `;
+                } 
+                else if (hasPendingBooking) {
                     bookingFormSide.innerHTML = `
                         <div class="text-center p-4">
                             <i class="fas fa-hourglass-half fa-3x" style="color: #f59e0b;"></i>
@@ -154,16 +175,6 @@ window.showPropertyDetails = async (propertyId) => {
                 }
             }
             
-            const visitTimeHour = document.getElementById('visitTimeHour');
-            const visitTimeMinute = document.getElementById('visitTimeMinute');
-            const visitTimeAmPm = document.getElementById('visitTimeAmPm');
-            if (visitTimeHour) visitTimeHour.value = '';
-            if (visitTimeMinute) visitTimeMinute.value = '';
-            if (visitTimeAmPm) visitTimeAmPm.value = 'AM';
-            
-            const visitMessage = document.getElementById('visitMessage');
-            if (visitMessage) visitMessage.value = '';
-            
             const modal = document.getElementById('propertyModal');
             if (modal) {
                 modal.style.display = 'flex';
@@ -179,6 +190,13 @@ window.showPropertyDetails = async (propertyId) => {
     }
 };
 
+// Add this helper function to get current user
+function getCurrentUser() {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+}
+
+// Rest of your existing code remains the same...
 window.closePropertyModal = function() {
     const modal = document.getElementById('propertyModal');
     if (modal) {
@@ -237,16 +255,13 @@ async function submitBookingRequest(propertyId, visitDate, visitHour, visitMinut
         if (data.success) {
             showToast('✅ Visit request sent successfully! We will contact you soon.', 'success');
             
-            // ✅ ADD THIS LINE HERE - Refresh pending bookings on index page
             if (typeof window.refreshUserBookings === 'function') {
                 window.refreshUserBookings();
             }
             
-            // Don't close modal immediately, wait a bit
             setTimeout(() => {
                 closePropertyModal();
                 
-                // Refresh the dashboard if we're on dashboard page
                 if (typeof loadAvailableProperties === 'function') {
                     loadAvailableProperties();
                 }
@@ -278,14 +293,12 @@ function setupBookingForm() {
     const bookingForm = document.getElementById('bookingRequestForm');
     if (!bookingForm) return;
     
-    // Remove existing listener to prevent duplicates
     const newForm = bookingForm.cloneNode(true);
     bookingForm.parentNode.replaceChild(newForm, bookingForm);
     
     newForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Prevent double submission
         if (newForm.hasAttribute('data-submitting')) return;
         newForm.setAttribute('data-submitting', 'true');
         

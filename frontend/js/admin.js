@@ -86,6 +86,10 @@ function escapeHtml(str) {
     });
 }
 
+
+
+// frontend/js/admin.js - Update the editProperty function
+
 window.editProperty = async (id) => {
     try {
         const response = await fetch(`/api/properties/${id}`);
@@ -100,6 +104,38 @@ window.editProperty = async (id) => {
             document.getElementById('editPrice').value = prop.price || 0;
             document.getElementById('editBedrooms').value = prop.bedrooms || 1;
             document.getElementById('editBathrooms').value = prop.bathrooms || 1;
+            document.getElementById('editDescription').value = prop.description || '';
+            
+            // Handle amenities
+            const amenitiesSelect = document.getElementById('editAmenities');
+            if (amenitiesSelect && prop.amenities) {
+                Array.from(amenitiesSelect.options).forEach(option => {
+                    option.selected = prop.amenities.includes(option.value);
+                });
+            }
+            
+            // Show current gallery images with delete option
+            if (prop.images && prop.images.gallery && prop.images.gallery.length > 0) {
+                const galleryContainer = document.getElementById('currentGallery');
+                if (galleryContainer) {
+                    galleryContainer.innerHTML = `
+                        <div class="row mt-2">
+                            ${prop.images.gallery.map((img, index) => `
+                                <div class="col-md-3 mb-2">
+                                    <div class="position-relative">
+                                        <img src="${img}" class="img-fluid rounded" style="height: 100px; object-fit: cover;">
+                                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                                                onclick="markGalleryImageForDelete(${index})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        <input type="hidden" name="delete_gallery_indices" id="delete_index_${index}" disabled>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
             
             const modal = document.getElementById('editModal');
             if (modal) {
@@ -114,22 +150,33 @@ window.editProperty = async (id) => {
     }
 };
 
-window.closeModal = function() {
-    const modal = document.getElementById('editModal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
+// Global array to track which gallery images to delete
+window.galleryImagesToDelete = [];
+
+window.markGalleryImageForDelete = (index) => {
+    if (!window.galleryImagesToDelete.includes(index)) {
+        window.galleryImagesToDelete.push(index);
+        const input = document.getElementById(`delete_index_${index}`);
+        if (input) {
+            input.value = index;
+            input.disabled = false;
+        }
+        showToast('Image marked for deletion', 'info');
     }
 };
 
+// Update the edit form submission
 document.getElementById('editPropertyForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     const propertyId = document.getElementById('editPropertyId').value;
     const formData = new FormData(e.target);
     formData.delete('propertyId');
+    
+    // Add gallery indices to delete
+    window.galleryImagesToDelete.forEach(index => {
+        formData.append('delete_gallery_indices', index);
+    });
     
     showToast('Updating property...', 'info');
     
@@ -143,6 +190,7 @@ document.getElementById('editPropertyForm')?.addEventListener('submit', async (e
         const data = await response.json();
         if (data.success) {
             showToast('✅ Property updated successfully!', 'success');
+            window.galleryImagesToDelete = []; // Reset the array
             closeModal();
             setTimeout(() => loadProperties(), 1000);
         } else {
@@ -152,6 +200,18 @@ document.getElementById('editPropertyForm')?.addEventListener('submit', async (e
         showToast(error.message, 'error');
     }
 });
+
+
+window.closeModal = function() {
+    const modal = document.getElementById('editModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+};
+
 
 async function loadBookings() {
     const token = localStorage.getItem('token');
