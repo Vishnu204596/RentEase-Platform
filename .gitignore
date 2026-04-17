@@ -29,6 +29,8 @@ mongodb-data/
 mongodb/
 
 # Uploads/Media files
+backend/uploads/
+uploads/
 media/
 *.jpg
 *.jpeg

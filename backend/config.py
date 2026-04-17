@@ -1,8 +1,7 @@
 import os
 from datetime import timedelta
-
-# ONLY load .env in local (optional)
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # MongoDB
@@ -14,9 +13,8 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# File Upload
-UPLOAD_FOLDER = "uploads/properties/"
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+# File Upload Limits (keep for validation)
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Remove UPLOAD_FOLDER and os.makedirs
