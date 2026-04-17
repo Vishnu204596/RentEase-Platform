@@ -321,6 +321,23 @@
             document.getElementById('currentYear').innerHTML = new Date().getFullYear();
         </script>
     </footer>
+    <script>
+        // Check if user is admin and load admin.js if needed
+        const currentUser = localStorage.getItem('user');
+        if (currentUser) {
+            try {
+                const user = JSON.parse(currentUser);
+                if (user.role === 'admin') {
+                    // Dynamically load admin.js for admin users on index page
+                    const script = document.createElement('script');
+                    script.src = 'js/admin.js';
+                    document.body.appendChild(script);
+                }
+            } catch(e) {
+                console.error('Error loading admin script:', e);
+            }
+        }
+    </script>
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
