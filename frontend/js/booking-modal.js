@@ -88,17 +88,18 @@ window.showPropertyDetails = async (propertyId) => {
             
             const bookingFormSide = document.querySelector('.booking-form-side');
             if (bookingFormSide) {
-                // If user is admin, show admin message instead of booking form
+                // If user is admin, show Edit Property button
                 if (isAdmin) {
                     bookingFormSide.innerHTML = `
                         <div class="text-center p-4">
                             <i class="fas fa-crown fa-3x" style="color: #f59e0b;"></i>
-                            <h4 class="mt-3" style="color: #f59e0b;">Admin View Only</h4>
-                            <p>As an admin, you cannot book properties.</p>
-                            <p class="text-muted">You can manage this property from the admin dashboard.</p>
-                            <hr>
-                            <button class="btn-primary mt-2" onclick="closePropertyModal()">
-                                <i class="fas fa-arrow-left me-2"></i> Close
+                            <h4 class="mt-3" style="color: #f59e0b;">Admin Controls</h4>
+                            <p>You are viewing this property as an administrator.</p>
+                            <button class="btn-primary mt-2" onclick="closePropertyModal(); editProperty('${propertyId}')">
+                                <i class="fas fa-edit me-2"></i> Edit This Property
+                            </button>
+                            <button class="btn-secondary mt-2 ms-2" onclick="closePropertyModal()">
+                                <i class="fas fa-times me-2"></i> Close
                             </button>
                         </div>
                     `;

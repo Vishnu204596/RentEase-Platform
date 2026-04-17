@@ -111,70 +111,96 @@ def add_property():
 @properties_bp.route('/<property_id>', methods=['PUT'])
 @admin_required
 def edit_property(property_id):
-    """Edit property with binary image handling"""
+    """Edit property with binary image handling - FIXED VERSION"""
     try:
         # Get existing property
         existing = db.properties.find_one({'_id': ObjectId(property_id)})
         if not existing:
             return jsonify({'success': False, 'error': 'Property not found'}), 404
         
-        # Update text fields
+        # Start with existing images to preserve them
         update_data = {}
-        updatable_fields = ['title', 'type', 'location', 'price', 'bedrooms', 'bathrooms', 'amenities', 'available', 'description']
         
-        for field in updatable_fields:
-            if field in request.form:
-                if field in ['price', 'bedrooms', 'bathrooms']:
-                    update_data[field] = float(request.form[field]) if field == 'price' else int(request.form[field])
-                elif field == 'amenities':
-                    update_data[field] = request.form.getlist(field)
-                else:
-                    update_data[field] = request.form[field]
+        # Update text fields (only if they exist in request)
+        if 'title' in request.form:
+            update_data['title'] = request.form['title']
+        if 'type' in request.form:
+            update_data['type'] = request.form['type']
+        if 'location' in request.form:
+            update_data['location'] = request.form['location']
+        if 'price' in request.form:
+            update_data['price'] = float(request.form['price'])
+        if 'bedrooms' in request.form:
+            update_data['bedrooms'] = int(request.form['bedrooms'])
+        if 'bathrooms' in request.form:
+            update_data['bathrooms'] = int(request.form['bathrooms'])
+        if 'description' in request.form:
+            update_data['description'] = request.form['description']
+        if 'amenities' in request.form:
+            update_data['amenities'] = request.form.getlist('amenities')
+        if 'available' in request.form:
+            available_val = request.form['available']
+            update_data['available'] = available_val == 'true' or available_val == True
         
-        # Handle main image update
+        # IMPORTANT: Preserve existing images by default
+        # Start with a copy of existing images
+        current_images = existing.get('images', {'main': None, 'gallery': []})
+        updated_images = {
+            'main': current_images.get('main'),
+            'gallery': current_images.get('gallery', []).copy()  # Make a copy
+        }
+        
+        # Handle main image update (only if a new file is uploaded)
         if 'main_image' in request.files and request.files['main_image'].filename:
             # Save new main image to database
             new_main = save_image_to_db(request.files['main_image'], "main_")
             if new_main:
-                update_data['images.main'] = new_main
+                updated_images['main'] = new_main
         
-        # Handle new gallery images
+        # Handle new gallery images (append, don't replace)
         if 'gallery_images' in request.files:
             new_gallery = request.files.getlist('gallery_images')
-            existing_gallery = existing['images'].get('gallery', [])
-            
             for img in new_gallery:
                 if img and img.filename:
                     img_data = save_image_to_db(img, "gallery_")
                     if img_data:
-                        existing_gallery.append(img_data)
-            
-            update_data['images.gallery'] = existing_gallery
+                        updated_images['gallery'].append(img_data)
         
         # Delete specific gallery images (by index)
         if 'delete_gallery_indices' in request.form:
             to_delete_indices = request.form.getlist('delete_gallery_indices')
-            existing_gallery = existing['images'].get('gallery', [])
-            
-            # Convert to list of indices to delete (as integers)
             indices_to_delete = [int(idx) for idx in to_delete_indices if idx.isdigit()]
             
             # Create new gallery without deleted indices
-            new_gallery = [img for idx, img in enumerate(existing_gallery) if idx not in indices_to_delete]
-            
-            update_data['images.gallery'] = new_gallery
+            updated_images['gallery'] = [
+                img for idx, img in enumerate(updated_images['gallery']) 
+                if idx not in indices_to_delete
+            ]
+        
+        # Only update images if there were changes
+        if updated_images != current_images:
+            update_data['images'] = updated_images
         
         # Update in database
         if update_data:
-            db.properties.update_one(
+            result = db.properties.update_one(
                 {'_id': ObjectId(property_id)},
                 {'$set': update_data}
             )
+            print(f"Updated fields: {list(update_data.keys())}")
+            if result.modified_count > 0:
+                print(f"Property {property_id} updated successfully")
+            else:
+                print(f"No changes made to property {property_id}")
+        else:
+            print(f"No data to update for property {property_id}")
         
         return jsonify({"success": True, "message": "Property updated successfully!"}), 200
         
     except Exception as e:
         print(f"Error editing property: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 @properties_bp.route('/image/<property_id>', methods=['GET'])
@@ -199,9 +225,9 @@ def get_property_image(property_id):
                 return jsonify({'error': 'Image not found'}), 404
         
         if not image_data or not image_data.get('data'):
-            # Return placeholder if no image
-            return Response(open('frontend/assets/default-placeholder.png', 'rb').read(), 
-                          mimetype='image/png')
+            # Return a simple SVG placeholder
+            placeholder = b'<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#cccccc"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#666666">No Image</text></svg>'
+            return Response(placeholder, mimetype='image/svg+xml')
         
         return Response(
             image_data['data'],
@@ -209,6 +235,7 @@ def get_property_image(property_id):
         )
         
     except Exception as e:
+        print(f"Error serving image: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @properties_bp.route('/', methods=['GET'])
@@ -220,7 +247,13 @@ def get_all_properties():
         max_price = request.args.get('max_price')
         location = request.args.get('location')
         
-        query = {'available': True}
+        query = {}
+        
+        # For non-admin users, only show available properties
+        # For admin, we'll show all properties (handled by admin page)
+        # Since admin page uses a different endpoint? Let's keep it simple
+        if 'available' in request.args:
+            query['available'] = request.args.get('available') == 'true'
         
         if property_type:
             query['type'] = property_type
@@ -258,6 +291,7 @@ def get_all_properties():
         }), 200
         
     except Exception as e:
+        print(f"Error getting properties: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @properties_bp.route('/<property_id>', methods=['GET'])
@@ -286,6 +320,7 @@ def get_property(property_id):
         }), 200
         
     except Exception as e:
+        print(f"Error getting property: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @properties_bp.route('/<property_id>', methods=['DELETE'])
@@ -301,6 +336,7 @@ def delete_property(property_id):
         return jsonify({"success": True, "message": "Property deleted successfully!"}), 200
         
     except Exception as e:
+        print(f"Error deleting property: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @properties_bp.route('/toggle-availability/<property_id>', methods=['PATCH'])
@@ -325,4 +361,5 @@ def toggle_availability(property_id):
         }), 200
         
     except Exception as e:
+        print(f"Error toggling availability: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
