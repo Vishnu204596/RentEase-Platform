@@ -196,6 +196,7 @@ async function loadProperties() {
     }
 }
 
+
 function displayProperties(properties) {
     const container = document.getElementById('propertyContainer');
     const typeFilter = document.getElementById('typeFilter')?.value || '';
@@ -204,7 +205,10 @@ function displayProperties(properties) {
     const priceMax = parseInt(document.getElementById('priceMax')?.value) || Infinity;
     const searchTerm = document.getElementById('searchBox')?.value.toLowerCase() || '';
     
+    // Filter only available properties for public view
     let filtered = properties.filter(property => {
+        // Only show available properties
+        if (property.available !== true) return false;
         if (typeFilter && property.type !== typeFilter) return false;
         if (bedrooms && property.bedrooms < parseInt(bedrooms)) return false;
         if (property.price < priceMin || property.price > priceMax) return false;
@@ -213,6 +217,7 @@ function displayProperties(properties) {
         return true;
     });
     
+    // Rest of the function remains the same...
     if (filtered.length === 0) {
         container.innerHTML = `
             <div class="no-properties">
@@ -224,6 +229,7 @@ function displayProperties(properties) {
         return;
     }
     
+    // Rest of the code...
     container.innerHTML = filtered.map(property => {
         let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
         if (property.images && property.images.main) {
@@ -236,7 +242,7 @@ function displayProperties(properties) {
         return `
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="property-card" onclick="showPropertyDetails('${property._id}')">
-                    <img src="${imageUrl}" class="card-img-top" alt="${property.title}">
+                    <img src="${imageUrl}" class="card-img-top" alt="${property.title}" onerror="this.src='https://via.placeholder.com/400x250?text=No+Image'">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="card-title">${escapeHtml(property.title)}</h5>

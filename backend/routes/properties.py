@@ -238,6 +238,8 @@ def get_property_image(property_id):
         print(f"Error serving image: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+# backend/routes/properties.py - Update the get_all_properties function
+
 @properties_bp.route('/', methods=['GET'])
 def get_all_properties():
     """Get all properties (without image binary data)"""
@@ -247,13 +249,16 @@ def get_all_properties():
         max_price = request.args.get('max_price')
         location = request.args.get('location')
         
+        # IMPORTANT: Only show available properties to public
+        # Check if the request is from admin (by checking for admin token)
+        # For simplicity, we'll show all properties to everyone but mark availability
         query = {}
         
-        # For non-admin users, only show available properties
-        # For admin, we'll show all properties (handled by admin page)
-        # Since admin page uses a different endpoint? Let's keep it simple
-        if 'available' in request.args:
-            query['available'] = request.args.get('available') == 'true'
+        # For public users, only show available properties
+        # Since we don't have user context here, we'll show all but frontend will filter
+        # Actually, let's filter only available properties for non-admin views
+        # But since we don't know if it's admin, let's just show all and let frontend handle?
+        # Better: Return all properties with availability status
         
         if property_type:
             query['type'] = property_type

@@ -79,6 +79,7 @@ async function hasPendingBooking(propertyId) {
     }
 }
 
+
 async function displayProperties(properties) {
     const container = document.getElementById('propertiesGrid');
     if (!container) return;
@@ -102,9 +103,11 @@ async function displayProperties(properties) {
     
     const searchTerm = document.getElementById('searchProperty')?.value.toLowerCase() || '';
     
+    // Filter only available properties
     let filtered = properties.filter(prop => 
-        prop.title?.toLowerCase().includes(searchTerm) || 
-        prop.location?.toLowerCase().includes(searchTerm)
+        prop.available === true && // Only show available properties
+        (prop.title?.toLowerCase().includes(searchTerm) || 
+         prop.location?.toLowerCase().includes(searchTerm))
     );
     
     if (filtered.length === 0) {
@@ -122,7 +125,7 @@ async function displayProperties(properties) {
         
         return `
             <div class="property-card" onclick="if(typeof showPropertyDetails === 'function') showPropertyDetails('${property._id}')">
-                <img src="${imageUrl}" alt="${property.title}">
+                <img src="${imageUrl}" alt="${property.title}" onerror="this.src='https://via.placeholder.com/400x250?text=No+Image'">
                 <div class="card-body">
                     <h5 class="card-title">${escapeHtml(property.title)}</h5>
                     <p><i class="fas fa-map-marker-alt feature-icon"></i> ${escapeHtml(property.location)}</p>
