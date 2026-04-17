@@ -1,5 +1,3 @@
-// js/auth.js - Add updateNavbar function here
-
 function getCurrentUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
@@ -10,14 +8,12 @@ function isLoggedIn() {
     return token !== null;
 }
 
-// Update navbar function - moved from main.js
 function updateNavbar() {
     const user = getCurrentUser();
     const navLinks = document.getElementById('navLinks');
     
     if (!navLinks) return;
     
-    // Remove existing dynamic links (keep only the Home link)
     while (navLinks.children.length > 1) {
         navLinks.removeChild(navLinks.lastChild);
     }
@@ -79,7 +75,6 @@ function updateNavbar() {
     }
 }
 
-// Make sure navbar updates on every page
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();
 });
@@ -143,58 +138,6 @@ async function handleRegister(userData) {
         }
     } catch (error) {
         showToast(error.message, 'error');
-    }
-}
-
-// Logout function
-function logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    showToast('Logged out successfully!', 'info');
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1000);
-}
-
-function getCurrentUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-}
-
-function isLoggedIn() {
-    const token = localStorage.getItem('token');
-    return token !== null;
-}
-
-function updateNavbar() {
-    const user = getCurrentUser();
-    const authLinks = document.getElementById('authLinks');
-    
-    if (!authLinks) return;
-    
-    if (user && isLoggedIn()) {
-        authLinks.innerHTML = `
-            <li class="nav-item">
-                <a class="nav-link" href="${user.role === 'admin' ? 'admin.html' : 'dashboard.html'}">
-                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-user-circle me-1"></i> ${user.name}
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item" href="#" onclick="logout()">
-                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                    </a></li>
-                </ul>
-            </li>
-        `;
-    } else {
-        authLinks.innerHTML = `
-            <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
-            <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
-        `;
     }
 }
 

@@ -143,7 +143,6 @@ function updateNavbar() {
         navLinks.appendChild(dropdownItem);
         
     } else {
-        // Add Login link
         const loginLink = document.createElement('li');
         loginLink.className = 'nav-item';
         loginLink.innerHTML = `
@@ -198,8 +197,42 @@ async function loadProperties() {
     }
 }
 
+// Global editProperty function that works from any page
+window.editProperty = async function(propertyId) {
+    const user = getCurrentUser();
+    if (!user || user.role !== 'admin') {
+        showToast('Admin access required', 'error');
+        return;
+    }
+    
+    sessionStorage.setItem('editPropertyId', propertyId);
+    
+    showToast('Redirecting to admin panel...', 'info');
+    setTimeout(() => {
+        window.location.href = 'admin.html';
+    }, 1000);
+};
 
-// frontend/js/main.js
+function checkForPendingEdit() {
+    const editId = sessionStorage.getItem('editPropertyId');
+    if (editId && window.location.pathname.includes('admin.html')) {
+        sessionStorage.removeItem('editPropertyId');
+        // Small delay to ensure admin.js is loaded
+        setTimeout(() => {
+            if (typeof editProperty === 'function') {
+                editProperty(editId);
+            } else {
+                console.error('editProperty function not found');
+                showToast('Error opening edit form', 'error');
+            }
+        }, 500);
+    }
+}
+
+// Call this when admin page loads
+if (window.location.pathname.includes('admin.html')) {
+    document.addEventListener('DOMContentLoaded', checkForPendingEdit);
+}
 
 function displayProperties(properties) {
     const container = document.getElementById('propertyContainer');
