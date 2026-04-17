@@ -197,6 +197,8 @@ async function loadProperties() {
 }
 
 
+// frontend/js/main.js
+
 function displayProperties(properties) {
     const container = document.getElementById('propertyContainer');
     const typeFilter = document.getElementById('typeFilter')?.value || '';
@@ -205,10 +207,8 @@ function displayProperties(properties) {
     const priceMax = parseInt(document.getElementById('priceMax')?.value) || Infinity;
     const searchTerm = document.getElementById('searchBox')?.value.toLowerCase() || '';
     
-    // Filter only available properties for public view
+    // Show ALL properties (both available and unavailable)
     let filtered = properties.filter(property => {
-        // Only show available properties
-        if (property.available !== true) return false;
         if (typeFilter && property.type !== typeFilter) return false;
         if (bedrooms && property.bedrooms < parseInt(bedrooms)) return false;
         if (property.price < priceMin || property.price > priceMax) return false;
@@ -217,7 +217,6 @@ function displayProperties(properties) {
         return true;
     });
     
-    // Rest of the function remains the same...
     if (filtered.length === 0) {
         container.innerHTML = `
             <div class="no-properties">
@@ -229,20 +228,25 @@ function displayProperties(properties) {
         return;
     }
     
-    // Rest of the code...
     container.innerHTML = filtered.map(property => {
         let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
         if (property.images && property.images.main) {
             imageUrl = property.images.main;
         }
         
-        // Check if user has pending booking for this property
         const hasPending = userPendingBookings.includes(property._id);
+        const isAvailable = property.available === true;
         
         return `
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="property-card" onclick="showPropertyDetails('${property._id}')">
-                    <img src="${imageUrl}" class="card-img-top" alt="${property.title}" onerror="this.src='https://via.placeholder.com/400x250?text=No+Image'">
+                <div class="property-card ${!isAvailable ? 'property-unavailable' : ''}" onclick="showPropertyDetails('${property._id}')">
+                    <div class="position-relative">
+                        <img src="${imageUrl}" class="card-img-top" alt="${property.title}" onerror="this.src='https://via.placeholder.com/400x250?text=No+Image'">
+                        ${!isAvailable ? 
+                            '<div class="unavailable-badge"><i class="fas fa-ban me-1"></i> Not Available</div>' : 
+                            '<div class="available-badge"><i class="fas fa-check-circle me-1"></i> Available</div>'
+                        }
+                    </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h5 class="card-title">${escapeHtml(property.title)}</h5>
@@ -261,13 +265,17 @@ function displayProperties(properties) {
                             ${property.amenities?.length > 3 ? `<span class="badge bg-light text-dark">+${property.amenities.length - 3}</span>` : ''}
                         </div>
                         <div class="property-actions mt-3">
-                            ${hasPending && isLoggedIn() ? 
-                                `<button class="btn-pending" disabled style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; width: 100%; cursor: not-allowed;">
-                                    <i class="fas fa-hourglass-half me-2"></i> Pending Request
+                            ${!isAvailable ? 
+                                `<button class="btn-disabled" disabled style="background: #9ca3af; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; width: 100%; cursor: not-allowed;">
+                                    <i class="fas fa-ban me-2"></i> Currently Unavailable
                                 </button>` :
-                                `<button class="btn-book" onclick="event.stopPropagation(); showPropertyDetails('${property._id}')">
-                                    <i class="fas fa-calendar-check"></i> View Details & Book
-                                </button>`
+                                (hasPending && isLoggedIn() ? 
+                                    `<button class="btn-pending" disabled style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; width: 100%; cursor: not-allowed;">
+                                        <i class="fas fa-hourglass-half me-2"></i> Pending Request
+                                    </button>` :
+                                    `<button class="btn-book" onclick="event.stopPropagation(); showPropertyDetails('${property._id}')">
+                                        <i class="fas fa-calendar-check"></i> View Details & Book
+                                    </button>`)
                             }
                         </div>
                     </div>

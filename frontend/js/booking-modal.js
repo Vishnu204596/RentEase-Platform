@@ -24,6 +24,7 @@ window.showPropertyDetails = async (propertyId) => {
             
             let hasPendingBooking = false;
             let isAdmin = user && user.role === 'admin';
+            let isAvailable = currentProperty.available === true;
             
             if (!isAdmin) {
                 try {
@@ -52,6 +53,7 @@ window.showPropertyDetails = async (propertyId) => {
             const modalAmenities = document.getElementById('modalAmenities');
             const modalDescription = document.getElementById('modalDescription');
             const visitDateInput = document.getElementById('visitDate');
+            const availabilityStatus = document.getElementById('availabilityStatus');
             
             if (modalTitle) modalTitle.innerHTML = currentProperty.title;
             if (modalPropertyTitle) modalPropertyTitle.innerHTML = currentProperty.title;
@@ -60,6 +62,15 @@ window.showPropertyDetails = async (propertyId) => {
             if (modalBathrooms) modalBathrooms.innerHTML = currentProperty.bathrooms || 1;
             if (modalPrice) modalPrice.innerHTML = currentProperty.price.toLocaleString();
             if (bookingPropertyId) bookingPropertyId.value = currentProperty._id;
+            
+            // Update availability status badge
+            if (availabilityStatus) {
+                if (isAvailable) {
+                    availabilityStatus.innerHTML = '<span class="badge bg-success" style="font-size: 0.9rem; padding: 8px 16px;"><i class="fas fa-check-circle me-2"></i> Available for Booking</span>';
+                } else {
+                    availabilityStatus.innerHTML = '<span class="badge bg-danger" style="font-size: 0.9rem; padding: 8px 16px;"><i class="fas fa-ban me-2"></i> Currently Unavailable</span>';
+                }
+            }
             
             const today = new Date().toISOString().split('T')[0];
             if (visitDateInput) {
@@ -95,7 +106,7 @@ window.showPropertyDetails = async (propertyId) => {
                             <i class="fas fa-crown fa-3x" style="color: #f59e0b;"></i>
                             <h4 class="mt-3" style="color: #f59e0b;">Admin Controls</h4>
                             <p>You are viewing this property as an administrator.</p>
-                            <button class="btn-primary mt-2" onclick="closePropertyModal(); editProperty('${propertyId}')">
+                            <button class="btn-primary mt-2" onclick="closePropertyModal(); if(typeof editProperty === 'function') editProperty('${propertyId}')">
                                 <i class="fas fa-edit me-2"></i> Edit This Property
                             </button>
                             <button class="btn-secondary mt-2 ms-2" onclick="closePropertyModal()">
@@ -104,6 +115,21 @@ window.showPropertyDetails = async (propertyId) => {
                         </div>
                     `;
                 } 
+                else if (!isAvailable) {
+                    // Property is unavailable - show message
+                    bookingFormSide.innerHTML = `
+                        <div class="text-center p-4">
+                            <i class="fas fa-ban fa-3x" style="color: #ef4444;"></i>
+                            <h4 class="mt-3" style="color: #ef4444;">Property Unavailable</h4>
+                            <p>This property is currently not available for booking.</p>
+                            <p class="text-muted">Please check back later or explore other properties.</p>
+                            <hr>
+                            <button class="btn-primary mt-2" onclick="closePropertyModal()">
+                                <i class="fas fa-arrow-left me-2"></i> Close
+                            </button>
+                        </div>
+                    `;
+                }
                 else if (hasPendingBooking) {
                     bookingFormSide.innerHTML = `
                         <div class="text-center p-4">
@@ -191,13 +217,13 @@ window.showPropertyDetails = async (propertyId) => {
     }
 };
 
-// Add this helper function to get current user
+// Helper function to get current user
 function getCurrentUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 
-// Rest of your existing code remains the same...
+// Close property modal
 window.closePropertyModal = function() {
     const modal = document.getElementById('propertyModal');
     if (modal) {
@@ -209,6 +235,7 @@ window.closePropertyModal = function() {
     }
 };
 
+// Submit booking request
 async function submitBookingRequest(propertyId, visitDate, visitHour, visitMinute, visitAmPm, message, onSuccessCallback) {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -290,6 +317,7 @@ async function submitBookingRequest(propertyId, visitDate, visitHour, visitMinut
     }
 }
 
+// Setup booking form
 function setupBookingForm() {
     const bookingForm = document.getElementById('bookingRequestForm');
     if (!bookingForm) return;
@@ -354,6 +382,7 @@ function setupBookingForm() {
     });
 }
 
+// Event listeners
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         const modal = document.getElementById('propertyModal');

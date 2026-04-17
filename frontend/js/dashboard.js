@@ -36,25 +36,7 @@ async function loadDashboard() {
     await loadMyBookings();
 }
 
-async function loadAvailableProperties() {
-    try {
-        const response = await fetch('/api/properties/');
-        const data = await response.json();
-        
-        if (data.success) {
-            document.getElementById('totalAvailable').innerText = data.count || 0;
-            displayProperties(data.properties || []);
-        } else {
-            console.error('Failed to load properties:', data);
-        }
-    } catch (error) {
-        console.error('Error loading properties:', error);
-        // Only show toast for actual errors, not on page load
-        if (error.message !== 'Failed to fetch' && typeof showToast === 'function') {
-            showToast('Failed to load properties: ' + error.message, 'error');
-        }
-    }
-}
+
 
 async function hasPendingBooking(propertyId) {
     const token = getToken();
@@ -80,6 +62,29 @@ async function hasPendingBooking(propertyId) {
 }
 
 
+// frontend/js/dashboard.js
+
+async function loadAvailableProperties() {
+    try {
+        const response = await fetch('/api/properties/');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Filter ONLY available properties for dashboard
+            const availableProperties = (data.properties || []).filter(prop => prop.available === true);
+            document.getElementById('totalAvailable').innerText = availableProperties.length;
+            displayProperties(availableProperties);
+        } else {
+            console.error('Failed to load properties:', data);
+        }
+    } catch (error) {
+        console.error('Error loading properties:', error);
+        if (error.message !== 'Failed to fetch' && typeof showToast === 'function') {
+            showToast('Failed to load properties: ' + error.message, 'error');
+        }
+    }
+}
+
 async function displayProperties(properties) {
     const container = document.getElementById('propertiesGrid');
     if (!container) return;
@@ -103,15 +108,14 @@ async function displayProperties(properties) {
     
     const searchTerm = document.getElementById('searchProperty')?.value.toLowerCase() || '';
     
-    // Filter only available properties
+    // Filter by search term (properties are already filtered to available only)
     let filtered = properties.filter(prop => 
-        prop.available === true && // Only show available properties
-        (prop.title?.toLowerCase().includes(searchTerm) || 
-         prop.location?.toLowerCase().includes(searchTerm))
+        prop.title?.toLowerCase().includes(searchTerm) || 
+        prop.location?.toLowerCase().includes(searchTerm)
     );
     
     if (filtered.length === 0) {
-        container.innerHTML = '<div class="no-data">No properties found</div>';
+        container.innerHTML = '<div class="no-data">No available properties found</div>';
         return;
     }
     
@@ -127,11 +131,16 @@ async function displayProperties(properties) {
             <div class="property-card" onclick="if(typeof showPropertyDetails === 'function') showPropertyDetails('${property._id}')">
                 <img src="${imageUrl}" alt="${property.title}" onerror="this.src='https://via.placeholder.com/400x250?text=No+Image'">
                 <div class="card-body">
-                    <h5 class="card-title">${escapeHtml(property.title)}</h5>
-                    <p><i class="fas fa-map-marker-alt feature-icon"></i> ${escapeHtml(property.location)}</p>
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">${escapeHtml(property.title)}</h5>
+                        <span class="badge bg-success" style="font-size: 0.7rem;">
+                            <i class="fas fa-check-circle me-1"></i> Available
+                        </span>
+                    </div>
+                    <p class="mt-2"><i class="fas fa-map-marker-alt feature-icon"></i> ${escapeHtml(property.location)}</p>
                     <div class="price-tag">₹${(property.price || 0).toLocaleString()}<span style="font-size: 0.9rem;">/month</span></div>
-                    <div class="property-amenities">
-                        ${(property.amenities || []).slice(0, 3).map(a => `<span class="badge bg-light text-dark">${escapeHtml(a)}</span>`).join('')}
+                    <div class="property-amenities mt-2">
+                        ${(property.amenities || []).slice(0, 3).map(a => `<span class="badge bg-light text-dark me-1">${escapeHtml(a)}</span>`).join('')}
                     </div>
                     ${hasPending ? 
                         `<button class="btn-pending mt-3" disabled style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; width: 100%; cursor: not-allowed;">
