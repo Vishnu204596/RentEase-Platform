@@ -99,17 +99,15 @@ window.logout = function() {
 
 function updateNavbar() {
     const user = getCurrentUser();
-    const navLinks = document.getElementById('navLinks');
+    const authLinks = document.getElementById('authLinks');
     
-    if (!navLinks) return;
+    if (!authLinks) return;
     
-    // Remove existing dynamic links (keep only the Home link)
-    while (navLinks.children.length > 1) {
-        navLinks.removeChild(navLinks.lastChild);
-    }
+    // Clear existing content
+    authLinks.innerHTML = '';
     
     if (user && isLoggedIn()) {
-        // Add Dashboard link
+        // Add Dashboard link as list item
         const dashboardLink = document.createElement('li');
         dashboardLink.className = 'nav-item';
         dashboardLink.innerHTML = `
@@ -117,15 +115,15 @@ function updateNavbar() {
                 <i class="fas fa-tachometer-alt me-1"></i> Dashboard
             </a>
         `;
-        navLinks.appendChild(dashboardLink);
+        authLinks.appendChild(dashboardLink);
         
-        // Add User Dropdown
+        // Add User Dropdown as list item
         const dropdownItem = document.createElement('li');
         dropdownItem.className = 'nav-item dropdown';
         dropdownItem.innerHTML = `
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fas fa-user-circle me-1"></i> 
-                <span>${user.name.length > 15 ? user.name.substring(0, 12) + '...' : user.name}</span>
+                <span>${user.name.length > 12 ? user.name.substring(0, 10) + '...' : user.name}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                 <li><h6 class="dropdown-header">Signed in as</h6></li>
@@ -140,9 +138,10 @@ function updateNavbar() {
                 </a></li>
             </ul>
         `;
-        navLinks.appendChild(dropdownItem);
+        authLinks.appendChild(dropdownItem);
         
     } else {
+        // Add Login link
         const loginLink = document.createElement('li');
         loginLink.className = 'nav-item';
         loginLink.innerHTML = `
@@ -150,7 +149,7 @@ function updateNavbar() {
                 <i class="fas fa-sign-in-alt me-1"></i> Login
             </a>
         `;
-        navLinks.appendChild(loginLink);
+        authLinks.appendChild(loginLink);
         
         // Add Register link
         const registerLink = document.createElement('li');
@@ -160,7 +159,7 @@ function updateNavbar() {
                 <i class="fas fa-user-plus me-1"></i> Register
             </a>
         `;
-        navLinks.appendChild(registerLink);
+        authLinks.appendChild(registerLink);
     }
 }
 
@@ -197,42 +196,8 @@ async function loadProperties() {
     }
 }
 
-// Global editProperty function that works from any page
-window.editProperty = async function(propertyId) {
-    const user = getCurrentUser();
-    if (!user || user.role !== 'admin') {
-        showToast('Admin access required', 'error');
-        return;
-    }
-    
-    sessionStorage.setItem('editPropertyId', propertyId);
-    
-    showToast('Redirecting to admin panel...', 'info');
-    setTimeout(() => {
-        window.location.href = 'admin.html';
-    }, 1000);
-};
 
-function checkForPendingEdit() {
-    const editId = sessionStorage.getItem('editPropertyId');
-    if (editId && window.location.pathname.includes('admin.html')) {
-        sessionStorage.removeItem('editPropertyId');
-        // Small delay to ensure admin.js is loaded
-        setTimeout(() => {
-            if (typeof editProperty === 'function') {
-                editProperty(editId);
-            } else {
-                console.error('editProperty function not found');
-                showToast('Error opening edit form', 'error');
-            }
-        }, 500);
-    }
-}
-
-// Call this when admin page loads
-if (window.location.pathname.includes('admin.html')) {
-    document.addEventListener('DOMContentLoaded', checkForPendingEdit);
-}
+// frontend/js/main.js
 
 function displayProperties(properties) {
     const container = document.getElementById('propertyContainer');

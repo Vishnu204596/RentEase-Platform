@@ -140,13 +140,13 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navLinks">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="index.html">
                             <i class="fas fa-home me-1"></i> Home
                         </a>
                     </li>
-                    
+                    <li id="authLinks" class="nav-item"></li>
                 </ul>
             </div>
         </div>
@@ -179,6 +179,12 @@
         Don't have an account? <a href="register.html">Register here</a>
       </div>
       
+      <div class="demo-credentials">
+        <p><strong>Demo Credentials:</strong></p>
+        <p>👑 <strong>Admin:</strong> admin@rentalbooking.com / admin123</p>
+        <p>👤 <strong>Tenant:</strong> tenant@test.com / 123456</p>
+        <p class="mt-2 text-muted small">* Admin accounts can only be created by super admin</p>
+      </div>
     </div>
   </section>
 
@@ -222,7 +228,6 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/toast.js"></script>
   <script src="js/auth.js"></script>
-    <script src="js/main.js"></script>
   <script>
     document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();

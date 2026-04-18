@@ -30,13 +30,13 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navLinks">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="index.html">
                             <i class="fas fa-home me-1"></i> Home
                         </a>
                     </li>
-                    
+                    <li id="authLinks" class="nav-item"></li>
                 </ul>
             </div>
         </div>
@@ -158,8 +158,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Location *</label>
-                                        <input type="text" name="location" class="form-control" required list="locationSuggestions">
-                                        <datalist id="locationSuggestions"></datalist>
+                                        <input type="text" name="location" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -186,102 +185,32 @@
                                         <textarea name="description" class="form-control" rows="3"></textarea>
                                     </div>
                                 </div>
-
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label>Amenities</label>
-                                        <div class="amenities-checkbox-group" id="amenitiesGroup">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="AC" id="amenity_ac">
-                                                        <label for="amenity_ac">AC</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="WiFi" id="amenity_wifi">
-                                                        <label for="amenity_wifi">WiFi</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Parking" id="amenity_parking">
-                                                        <label for="amenity_parking">Parking</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Gym" id="amenity_gym">
-                                                        <label for="amenity_gym">Gym</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Pool" id="amenity_pool">
-                                                        <label for="amenity_pool">Swimming Pool</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Security" id="amenity_security">
-                                                        <label for="amenity_security">24/7 Security</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Lift" id="amenity_lift">
-                                                        <label for="amenity_lift">Lift/Elevator</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Power Backup" id="amenity_power">
-                                                        <label for="amenity_power">Power Backup</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Water Supply" id="amenity_water">
-                                                        <label for="amenity_water">24/7 Water Supply</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="checkbox-item">
-                                                        <input type="checkbox" name="amenities" value="Furnished" id="amenity_furnished">
-                                                        <label for="amenity_furnished">Fully Furnished</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-2">
-                                            <label>Custom Amenities</label>
-                                            <div id="customAmenitiesList"></div>
-                                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="addCustomAmenity()">
-                                                <i class="fas fa-plus-circle me-1"></i> Add Custom Amenity
-                                            </button>
-                                        </div>
+                                        <label>Amenities (hold Ctrl to select multiple)</label>
+                                        <select name="amenities" multiple class="form-select">
+                                            <option value="AC">AC</option>
+                                            <option value="WiFi">WiFi</option>
+                                            <option value="Parking">Parking</option>
+                                            <option value="Gym">Gym</option>
+                                            <option value="Pool">Swimming Pool</option>
+                                            <option value="Security">24/7 Security</option>
+                                        </select>
                                     </div>
                                 </div>
-                                
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Main Image</label>
                                         <input type="file" name="main_image" accept="image/*" class="form-control">
-                                        <small class="text-muted">Optional - placeholder will be used if not provided</small>
+                                        <small class="text-muted">Optional - placeholder will be used if not
+                                            provided</small>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <div class="form-group">
-                                        <label>Gallery Images</label>
-                                        <div class="gallery-upload-container">
-                                            <div id="addGalleryImagesList"></div>
-                                            <button type="button" class="btn btn-outline-primary mt-2" onclick="addAddGalleryImageInput()">
-                                                <i class="fas fa-plus-circle me-2"></i> Add Another Image
-                                            </button>
-                                        </div>
-                                        <small class="text-muted">Click the button to add multiple images one by one</small>
+                                        <label>Gallery Images (Multiple)</label>
+                                        <input type="file" name="gallery_images" accept="image/*" multiple
+                                            class="form-control">
                                     </div>
                                 </div>
                             </div>
@@ -293,7 +222,7 @@
         </div>
     </section>
 
-    <!-- Edit Property Modal -->
+    <!-- Edit Property Modal - COMPLETELY FIXED -->
     <div id="editModal" class="modal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
@@ -321,8 +250,7 @@
 
                     <div class="form-group">
                         <label>Location *</label>
-                        <input type="text" id="editLocation" name="location" class="form-control" required list="editLocationSuggestions">
-                        <datalist id="editLocationSuggestions"></datalist>
+                        <input type="text" id="editLocation" name="location" class="form-control" required>
                     </div>
 
                     <div class="form-group">
@@ -350,94 +278,29 @@
                         <textarea id="editDescription" name="description" class="form-control" rows="3"></textarea>
                     </div>
 
-                    <!-- Amenities Checkboxes for Edit Modal -->
                     <div class="form-group">
-                        <label>Amenities</label>
-                        <div class="amenities-checkbox-group" id="editAmenitiesGroup">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="AC" id="edit_amenity_ac">
-                                        <label for="edit_amenity_ac">AC</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="WiFi" id="edit_amenity_wifi">
-                                        <label for="edit_amenity_wifi">WiFi</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Parking" id="edit_amenity_parking">
-                                        <label for="edit_amenity_parking">Parking</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Gym" id="edit_amenity_gym">
-                                        <label for="edit_amenity_gym">Gym</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Pool" id="edit_amenity_pool">
-                                        <label for="edit_amenity_pool">Swimming Pool</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Security" id="edit_amenity_security">
-                                        <label for="edit_amenity_security">24/7 Security</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Lift" id="edit_amenity_lift">
-                                        <label for="edit_amenity_lift">Lift/Elevator</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Power Backup" id="edit_amenity_power">
-                                        <label for="edit_amenity_power">Power Backup</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Water Supply" id="edit_amenity_water">
-                                        <label for="edit_amenity_water">24/7 Water Supply</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" name="amenities" value="Furnished" id="edit_amenity_furnished">
-                                        <label for="edit_amenity_furnished">Fully Furnished</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-2">
-                            <label>Custom Amenities</label>
-                            <div id="editCustomAmenitiesList"></div>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="addEditCustomAmenity()">
-                                <i class="fas fa-plus-circle me-1"></i> Add Custom Amenity
-                            </button>
-                        </div>
+                        <label>Amenities (hold Ctrl to select multiple)</label>
+                        <select id="editAmenities" name="amenities" multiple class="form-select">
+                            <option value="AC">AC</option>
+                            <option value="WiFi">WiFi</option>
+                            <option value="Parking">Parking</option>
+                            <option value="Gym">Gym</option>
+                            <option value="Pool">Swimming Pool</option>
+                            <option value="Security">24/7 Security</option>
+                        </select>
                     </div>
 
-                    <!-- Current Gallery Images -->
+                    <!-- Replace the gallery section in edit modal -->
                     <div class="form-group">
                         <label>Current Gallery Images</label>
                         <div id="currentGallery" style="min-height: 100px;"></div>
                     </div>
 
-                    <!-- Add New Gallery Images -->
                     <div class="form-group">
                         <label>Add New Gallery Images</label>
                         <div class="gallery-upload-container">
-                            <div id="editGalleryImagesList"></div>
-                            <button type="button" class="btn btn-outline-primary mt-2" onclick="addEditGalleryImageInput()">
+                            <div id="galleryImagesList"></div>
+                            <button type="button" class="btn btn-outline-primary mt-2" onclick="addGalleryImageInput()">
                                 <i class="fas fa-plus-circle me-2"></i> Add Another Image
                             </button>
                         </div>
@@ -446,6 +309,11 @@
                     <div class="form-group">
                         <label>New Main Image (optional)</label>
                         <input type="file" name="main_image" accept="image/*" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Gallery Images (optional)</label>
+                        <input type="file" name="gallery_images" accept="image/*" multiple class="form-control">
                     </div>
 
                     <div class="form-group">

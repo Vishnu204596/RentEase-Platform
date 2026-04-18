@@ -1,84 +1,3 @@
-function getCurrentUser() {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-}
-
-function isLoggedIn() {
-    const token = localStorage.getItem('token');
-    return token !== null;
-}
-
-function updateNavbar() {
-    const user = getCurrentUser();
-    const navLinks = document.getElementById('navLinks');
-    
-    if (!navLinks) return;
-    
-    while (navLinks.children.length > 1) {
-        navLinks.removeChild(navLinks.lastChild);
-    }
-    
-    if (user && isLoggedIn()) {
-        // Add Dashboard link
-        const dashboardLink = document.createElement('li');
-        dashboardLink.className = 'nav-item';
-        dashboardLink.innerHTML = `
-            <a class="nav-link" href="${user.role === 'admin' ? 'admin.html' : 'dashboard.html'}">
-                <i class="fas fa-tachometer-alt me-1"></i> Dashboard
-            </a>
-        `;
-        navLinks.appendChild(dashboardLink);
-        
-        // Add User Dropdown
-        const dropdownItem = document.createElement('li');
-        dropdownItem.className = 'nav-item dropdown';
-        dropdownItem.innerHTML = `
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-user-circle me-1"></i> 
-                <span>${user.name.length > 15 ? user.name.substring(0, 12) + '...' : user.name}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><h6 class="dropdown-header">Signed in as</h6></li>
-                <li><a class="dropdown-item disabled" href="#">${user.email}</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="${user.role === 'admin' ? 'admin.html' : 'dashboard.html'}">
-                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
-                </a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="logout()">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                </a></li>
-            </ul>
-        `;
-        navLinks.appendChild(dropdownItem);
-        
-    } else {
-        // Add Login link
-        const loginLink = document.createElement('li');
-        loginLink.className = 'nav-item';
-        loginLink.innerHTML = `
-            <a class="nav-link" href="login.html">
-                <i class="fas fa-sign-in-alt me-1"></i> Login
-            </a>
-        `;
-        navLinks.appendChild(loginLink);
-        
-        // Add Register link
-        const registerLink = document.createElement('li');
-        registerLink.className = 'nav-item';
-        registerLink.innerHTML = `
-            <a class="nav-link" href="register.html">
-                <i class="fas fa-user-plus me-1"></i> Register
-            </a>
-        `;
-        navLinks.appendChild(registerLink);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    updateNavbar();
-});
-
 if (typeof API_BASE === 'undefined') {
     var API_BASE = '/api';
 }
@@ -138,6 +57,58 @@ async function handleRegister(userData) {
         }
     } catch (error) {
         showToast(error.message, 'error');
+    }
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    showToast('Logged out successfully!', 'info');
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1000);
+}
+
+function getCurrentUser() {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+}
+
+function isLoggedIn() {
+    const token = localStorage.getItem('token');
+    return token !== null;
+}
+
+function updateNavbar() {
+    const user = getCurrentUser();
+    const authLinks = document.getElementById('authLinks');
+    
+    if (!authLinks) return;
+    
+    if (user && isLoggedIn()) {
+        authLinks.innerHTML = `
+            <li class="nav-item">
+                <a class="nav-link" href="${user.role === 'admin' ? 'admin.html' : 'dashboard.html'}">
+                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle me-1"></i> ${user.name}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </a></li>
+                </ul>
+            </li>
+        `;
+    } else {
+        authLinks.innerHTML = `
+            <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+            <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+        `;
     }
 }
 

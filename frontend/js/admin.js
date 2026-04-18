@@ -12,45 +12,6 @@ if (!user || user.role !== 'admin') {
     }, 1500);
 }
 
-// Tamil Nadu Locations
-const tamilNaduLocations = [
-    "Chennai, T Nagar", "Chennai, Anna Nagar", "Chennai, Adyar", "Chennai, Velachery",
-    "Chennai, OMR", "Chennai, Porur", "Coimbatore, RS Puram", "Coimbatore, Peelamedu",
-    "Coimbatore, Gandhipuram", "Coimbatore, Saravanampatti", "Madurai, Anna Nagar",
-    "Madurai, KK Nagar", "Madurai, Goripalayam", "Tiruchirappalli, Srirangam",
-    "Tiruchirappalli, Thillai Nagar", "Tiruppur, Kumaran Colony", "Salem, Fairlands",
-    "Salem, Ammapet", "Erode, Perundurai Road", "Tirunelveli, Palayamkottai",
-    "Vellore, Sathuvachari", "Thanjavur, Medical College Road", "Kanyakumari, Nagercoil",
-    "Dindigul, Collectorate Area", "Chengalpattu, GST Road", "Hosur, Sipcot Area",
-    "Ooty, Charing Cross", "Kodaikanal, Seven Roads Junction", "Kanchipuram, Kamarajar Salai"
-];
-
-// Populate location suggestions
-function populateLocationSuggestions() {
-    const locationInputs = [
-        { input: document.querySelector('input[name="location"]'), datalist: 'locationSuggestions' },
-        { input: document.getElementById('editLocation'), datalist: 'editLocationSuggestions' }
-    ];
-    
-    locationInputs.forEach(item => {
-        if (item.input) {
-            let datalist = document.getElementById(item.datalist);
-            if (!datalist) {
-                datalist = document.createElement('datalist');
-                datalist.id = item.datalist;
-                document.body.appendChild(datalist);
-            }
-            datalist.innerHTML = '';
-            tamilNaduLocations.forEach(location => {
-                const option = document.createElement('option');
-                option.value = location;
-                datalist.appendChild(option);
-            });
-            item.input.setAttribute('list', item.datalist);
-        }
-    });
-}
-
 async function loadDashboard() {
     await loadProperties();
     await loadBookings();
@@ -62,37 +23,12 @@ async function loadProperties() {
         const response = await fetch('/api/properties/');
         const data = await response.json();
         
-        console.log('Properties response:', data); // Debug log
-        
         if (data.success) {
-            const properties = data.properties || [];
-            const totalCount = data.count || properties.length;
-            document.getElementById('totalProperties').innerText = totalCount;
-            displayPropertiesTable(properties);
-        } else {
-            console.error('Failed to load properties:', data.error);
-            document.getElementById('totalProperties').innerText = '0';
-            document.getElementById('propertiesTable').innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center text-danger">
-                        Error loading properties: ${data.error || 'Unknown error'}
-                    </td>
-                </tr>
-            `;
+            document.getElementById('totalProperties').innerText = data.count || 0;
+            displayPropertiesTable(data.properties || []);
         }
     } catch (error) {
-        console.error('Error in loadProperties:', error);
-        document.getElementById('totalProperties').innerText = '0';
-        document.getElementById('propertiesTable').innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center text-danger">
-                    Failed to load properties. Check if backend is running.
-                </td>
-            </tr>
-        `;
-        if (typeof showToast === 'function') {
-            showToast('Failed to load properties: ' + error.message, 'error');
-        }
+        showToast(error.message, 'error');
     }
 }
 
@@ -104,9 +40,9 @@ function displayPropertiesTable(properties) {
     }
     
     tbody.innerHTML = properties.map(prop => {
-        // Handle image URL properly
         let imageUrl = 'https://via.placeholder.com/50?text=No+Img';
-        if (prop.images && prop.images.main && prop.images.main !== 'null' && prop.images.main !== 'undefined') {
+        
+        if (prop.images && prop.images.main) {
             imageUrl = prop.images.main;
         }
         
@@ -144,9 +80,14 @@ function escapeHtml(str) {
     });
 }
 
-// Gallery image inputs for Add Property
-window.addAddGalleryImageInput = function() {
-    const container = document.getElementById('addGalleryImagesList');
+// frontend/js/admin.js - Add these functions
+
+// Track gallery image inputs
+let galleryImageCount = 0;
+
+// Function to add new gallery image input
+window.addGalleryImageInput = function() {
+    const container = document.getElementById('galleryImagesList');
     if (!container) return;
     
     const inputDiv = document.createElement('div');
@@ -160,120 +101,56 @@ window.addAddGalleryImageInput = function() {
         </button>
     `;
     container.appendChild(inputDiv);
+    galleryImageCount++;
 };
 
-// Gallery image inputs for Edit Property
-window.addEditGalleryImageInput = function() {
-    const container = document.getElementById('editGalleryImagesList');
-    if (!container) return;
+// Update the edit property form submission
+document.getElementById('editPropertyForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const propertyId = document.getElementById('editPropertyId').value;
+    const formData = new FormData(e.target);
+    formData.delete('propertyId');
     
-    const inputDiv = document.createElement('div');
-    inputDiv.className = 'gallery-input-group mb-2';
-    inputDiv.style.display = 'flex';
-    inputDiv.style.gap = '10px';
-    inputDiv.innerHTML = `
-        <input type="file" name="gallery_images" accept="image/*" class="form-control" style="flex: 1;">
-        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-            <i class="fas fa-trash"></i>
-        </button>
-    `;
-    container.appendChild(inputDiv);
-};
-
-// Custom amenities for Add Property
-window.addCustomAmenity = function() {
-    const container = document.getElementById('customAmenitiesList');
-    if (!container) return;
+    // Add gallery indices to delete
+    window.galleryImagesToDelete.forEach(index => {
+        formData.append('delete_gallery_indices', index);
+    });
     
-    const inputDiv = document.createElement('div');
-    inputDiv.className = 'custom-amenity-input mb-2';
-    inputDiv.style.display = 'flex';
-    inputDiv.style.gap = '10px';
-    inputDiv.innerHTML = `
-        <input type="text" name="custom_amenities" class="form-control" placeholder="Enter amenity name" style="flex: 1;">
-        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-            <i class="fas fa-trash"></i>
-        </button>
-    `;
-    container.appendChild(inputDiv);
-};
-
-// Custom amenities for Edit Property
-window.addEditCustomAmenity = function() {
-    const container = document.getElementById('editCustomAmenitiesList');
-    if (!container) return;
+    // Convert available to boolean
+    const available = formData.get('available');
+    if (available) {
+        formData.set('available', available === 'true');
+    }
     
-    const inputDiv = document.createElement('div');
-    inputDiv.className = 'custom-amenity-input mb-2';
-    inputDiv.style.display = 'flex';
-    inputDiv.style.gap = '10px';
-    inputDiv.innerHTML = `
-        <input type="text" name="custom_amenities" class="form-control" placeholder="Enter amenity name" style="flex: 1;">
-        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-            <i class="fas fa-trash"></i>
-        </button>
-    `;
-    container.appendChild(inputDiv);
-};
-
-// Add Property Form Submission
-const addPropertyForm = document.getElementById('addPropertyForm');
-if (addPropertyForm) {
-    addPropertyForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const token = localStorage.getItem('token');
-        if (!token) {
-            showToast('Please login first', 'error');
-            window.location.href = 'login.html';
-            return;
-        }
-        
-        const formData = new FormData(e.target);
-        
-        // Handle custom amenities
-        const customAmenities = document.querySelectorAll('#customAmenitiesList input[name="custom_amenities"]');
-        customAmenities.forEach(input => {
-            if (input.value.trim()) {
-                formData.append('amenities', input.value.trim());
-            }
+    showToast('Updating property...', 'info');
+    
+    try {
+        const response = await fetch(`/api/properties/${propertyId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
         });
         
-        showToast('Adding property... Please wait', 'info');
-        
-        try {
-            const response = await fetch('/api/properties/', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showToast('✅ Property added successfully!', 'success');
-                e.target.reset();
-                document.getElementById('addGalleryImagesList').innerHTML = '';
-                document.getElementById('customAmenitiesList').innerHTML = '';
-                setTimeout(async () => {
-                    await loadProperties();
-                    const propertiesTab = document.querySelector('[data-bs-target="#properties"]');
-                    if (propertiesTab && typeof bootstrap !== 'undefined') {
-                        const bsTab = new bootstrap.Tab(propertiesTab);
-                        bsTab.show();
-                    }
-                }, 1500);
-            } else {
-                showToast(data.error || 'Failed to add property', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showToast(error.message || 'Network error', 'error');
+        const data = await response.json();
+        if (data.success) {
+            showToast('✅ Property updated successfully!', 'success');
+            window.galleryImagesToDelete = [];
+            // Clear dynamic gallery inputs
+            const galleryContainer = document.getElementById('galleryImagesList');
+            if (galleryContainer) galleryContainer.innerHTML = '';
+            closeModal();
+            setTimeout(() => loadProperties(), 1000);
+        } else {
+            showToast(data.error || 'Failed to update', 'error');
         }
-    });
-}
+    } catch (error) {
+        console.error('Error updating property:', error);
+        showToast(error.message, 'error');
+    }
+});
 
-// Edit Property Function
+// Update the editProperty function to clear dynamic inputs
 window.editProperty = async (id) => {
     try {
         const response = await fetch(`/api/properties/${id}`);
@@ -282,53 +159,41 @@ window.editProperty = async (id) => {
         if (data.success) {
             const prop = data.property;
             
-            // Clear dynamic inputs
-            document.getElementById('editGalleryImagesList').innerHTML = '';
-            document.getElementById('editCustomAmenitiesList').innerHTML = '';
+            // Clear dynamic gallery inputs
+            const galleryContainer = document.getElementById('galleryImagesList');
+            if (galleryContainer) galleryContainer.innerHTML = '';
+            galleryImageCount = 0;
             
-            // Set form values
-            document.getElementById('editPropertyId').value = prop._id;
-            document.getElementById('editTitle').value = prop.title || '';
-            document.getElementById('editType').value = prop.type || 'apartment';
-            document.getElementById('editLocation').value = prop.location || '';
-            document.getElementById('editPrice').value = prop.price || 0;
-            document.getElementById('editBedrooms').value = prop.bedrooms || 1;
-            document.getElementById('editBathrooms').value = prop.bathrooms || 1;
-            document.getElementById('editDescription').value = prop.description || '';
-            document.getElementById('editAvailable').value = prop.available ? 'true' : 'false';
+            // Check if all elements exist before setting values
+            const editPropertyId = document.getElementById('editPropertyId');
+            const editTitle = document.getElementById('editTitle');
+            const editType = document.getElementById('editType');
+            const editLocation = document.getElementById('editLocation');
+            const editPrice = document.getElementById('editPrice');
+            const editBedrooms = document.getElementById('editBedrooms');
+            const editBathrooms = document.getElementById('editBathrooms');
+            const editDescription = document.getElementById('editDescription');
+            const editAvailable = document.getElementById('editAvailable');
             
-            // Handle amenities checkboxes
-            document.querySelectorAll('#editAmenitiesGroup input[type="checkbox"]').forEach(cb => {
-                cb.checked = false;
-            });
+            if (editPropertyId) editPropertyId.value = prop._id;
+            if (editTitle) editTitle.value = prop.title || '';
+            if (editType) editType.value = prop.type || 'apartment';
+            if (editLocation) editLocation.value = prop.location || '';
+            if (editPrice) editPrice.value = prop.price || 0;
+            if (editBedrooms) editBedrooms.value = prop.bedrooms || 1;
+            if (editBathrooms) editBathrooms.value = prop.bathrooms || 1;
+            if (editDescription) editDescription.value = prop.description || '';
+            if (editAvailable) editAvailable.value = prop.available ? 'true' : 'false';
             
-            if (prop.amenities && prop.amenities.length > 0) {
-                prop.amenities.forEach(amenity => {
-                    const checkbox = document.querySelector(`#editAmenitiesGroup input[value="${amenity}"]`);
-                    if (checkbox) checkbox.checked = true;
-                });
-                
-                // Add custom amenities
-                const predefinedAmenities = ['AC', 'WiFi', 'Parking', 'Gym', 'Pool', 'Security', 'Lift', 'Power Backup', 'Water Supply', 'Furnished'];
-                const customAmenitiesList = prop.amenities.filter(a => !predefinedAmenities.includes(a));
-                
-                customAmenitiesList.forEach(amenity => {
-                    const container = document.getElementById('editCustomAmenitiesList');
-                    const inputDiv = document.createElement('div');
-                    inputDiv.className = 'custom-amenity-input mb-2';
-                    inputDiv.style.display = 'flex';
-                    inputDiv.style.gap = '10px';
-                    inputDiv.innerHTML = `
-                        <input type="text" name="custom_amenities" class="form-control" value="${escapeHtml(amenity)}" style="flex: 1;">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    `;
-                    container.appendChild(inputDiv);
+            // Handle amenities
+            const amenitiesSelect = document.getElementById('editAmenities');
+            if (amenitiesSelect && prop.amenities) {
+                Array.from(amenitiesSelect.options).forEach(option => {
+                    option.selected = prop.amenities.includes(option.value);
                 });
             }
             
-            // Show current gallery images
+            // Show current gallery images with delete option
             const galleryDisplayContainer = document.getElementById('currentGallery');
             if (galleryDisplayContainer) {
                 if (prop.images && prop.images.gallery && prop.images.gallery.length > 0) {
@@ -366,7 +231,7 @@ window.editProperty = async (id) => {
     }
 };
 
-// Global array for gallery images to delete
+// Global array to track which gallery images to delete
 window.galleryImagesToDelete = [];
 
 window.markGalleryImageForDelete = (index) => {
@@ -376,56 +241,6 @@ window.markGalleryImageForDelete = (index) => {
     }
 };
 
-// Edit Property Form Submission
-document.getElementById('editPropertyForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-    const propertyId = document.getElementById('editPropertyId').value;
-    const formData = new FormData(e.target);
-    formData.delete('propertyId');
-    
-    // Add gallery indices to delete
-    window.galleryImagesToDelete.forEach(index => {
-        formData.append('delete_gallery_indices', index);
-    });
-    
-    // Handle custom amenities
-    const customAmenities = document.querySelectorAll('#editCustomAmenitiesList input[name="custom_amenities"]');
-    customAmenities.forEach(input => {
-        if (input.value.trim()) {
-            formData.append('amenities', input.value.trim());
-        }
-    });
-    
-    // Convert available to boolean
-    const available = formData.get('available');
-    if (available) {
-        formData.set('available', available === 'true');
-    }
-    
-    showToast('Updating property...', 'info');
-    
-    try {
-        const response = await fetch(`/api/properties/${propertyId}`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-            showToast('✅ Property updated successfully!', 'success');
-            window.galleryImagesToDelete = [];
-            closeModal();
-            setTimeout(() => loadProperties(), 1000);
-        } else {
-            showToast(data.error || 'Failed to update', 'error');
-        }
-    } catch (error) {
-        console.error('Error updating property:', error);
-        showToast(error.message, 'error');
-    }
-});
 
 window.closeModal = function() {
     const modal = document.getElementById('editModal');
@@ -507,6 +322,52 @@ async function loadAdminStats() {
     } catch (error) {
         console.error('Error loading admin stats:', error);
     }
+}
+
+const addPropertyForm = document.getElementById('addPropertyForm');
+if (addPropertyForm) {
+    addPropertyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Please login first', 'error');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        const formData = new FormData(e.target);
+        
+        showToast('Adding property... Please wait', 'info');
+        
+        try {
+            const response = await fetch('/api/properties/', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showToast('✅ Property added successfully!', 'success');
+                e.target.reset();
+                setTimeout(async () => {
+                    await loadProperties();
+                    const propertiesTab = document.querySelector('[data-bs-target="#properties"]');
+                    if (propertiesTab && typeof bootstrap !== 'undefined') {
+                        const bsTab = new bootstrap.Tab(propertiesTab);
+                        bsTab.show();
+                    }
+                }, 1500);
+            } else {
+                showToast(data.error || 'Failed to add property', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast(error.message || 'Network error', 'error');
+        }
+    });
 }
 
 window.toggleAvailability = async (id, currentStatus) => {
@@ -599,6 +460,4 @@ window.onclick = function(event) {
     }
 };
 
-// Initialize
-populateLocationSuggestions();
 loadDashboard();

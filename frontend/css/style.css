@@ -531,63 +531,6 @@ textarea.form-control {
     font-size: 0.7rem;
 }
 
-/* Amenities Checkbox Styles */
-.amenities-checkbox-group {
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-}
-
-.checkbox-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 5px;
-    border-radius: 8px;
-    transition: background 0.2s ease;
-}
-
-.checkbox-item:hover {
-    background: #f1f5f9;
-}
-
-.checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin-right: 10px;
-    cursor: pointer;
-    accent-color: var(--primary-color);
-}
-
-.checkbox-item label {
-    margin: 0;
-    cursor: pointer;
-    font-weight: normal;
-    color: var(--neutral-700);
-}
-
-/* Gallery Upload Container */
-.gallery-upload-container {
-    border: 2px dashed #e2e8f0;
-    border-radius: 12px;
-    padding: 1rem;
-    background: #f8fafc;
-}
-
-.gallery-input-group {
-    margin-bottom: 0.75rem;
-}
-
-.gallery-input-group:last-child {
-    margin-bottom: 0;
-}
-
-/* Custom Amenity Input */
-.custom-amenity-input {
-    margin-bottom: 0.5rem;
-}
-
 /* ===== STATS CARDS (from new) ===== */
 .stats-grid {
   display: grid;

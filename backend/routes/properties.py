@@ -210,33 +210,25 @@ def get_property_image(property_id):
         image_type = request.args.get('type', 'main')
         index = request.args.get('index', 0, type=int)
         
-        print(f"Serving image - Property ID: {property_id}, Type: {image_type}, Index: {index}")
-        
         property_data = db.properties.find_one({'_id': ObjectId(property_id)})
         
         if not property_data:
-            print(f"Property not found: {property_id}")
-            # Return a placeholder image
-            placeholder = b'<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#64748b">No Image</text></svg>'
-            return Response(placeholder, mimetype='image/svg+xml')
-        
-        image_data = None
+            return jsonify({'error': 'Property not found'}), 404
         
         if image_type == 'main':
-            images = property_data.get('images', {})
-            image_data = images.get('main') if images else None
+            image_data = property_data.get('images', {}).get('main')
         else:
             gallery = property_data.get('images', {}).get('gallery', [])
             if index < len(gallery):
                 image_data = gallery[index]
+            else:
+                return jsonify({'error': 'Image not found'}), 404
         
         if not image_data or not image_data.get('data'):
-            print(f"No image data found for {property_id}, type: {image_type}")
-            # Return a placeholder image
-            placeholder = b'<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#64748b">No Image</text></svg>'
+            # Return a simple SVG placeholder
+            placeholder = b'<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#cccccc"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#666666">No Image</text></svg>'
             return Response(placeholder, mimetype='image/svg+xml')
         
-        # Return the actual image
         return Response(
             image_data['data'],
             mimetype=image_data.get('content_type', 'image/jpeg')
@@ -244,11 +236,9 @@ def get_property_image(property_id):
         
     except Exception as e:
         print(f"Error serving image: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        # Return placeholder on error
-        placeholder = b'<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#e2e8f0"/><text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#64748b">Error Loading Image</text></svg>'
-        return Response(placeholder, mimetype='image/svg+xml')
+        return jsonify({'error': str(e)}), 500
+
+# backend/routes/properties.py - Update the get_all_properties function
 
 @properties_bp.route('/', methods=['GET'])
 def get_all_properties():
@@ -259,7 +249,16 @@ def get_all_properties():
         max_price = request.args.get('max_price')
         location = request.args.get('location')
         
+        # IMPORTANT: Only show available properties to public
+        # Check if the request is from admin (by checking for admin token)
+        # For simplicity, we'll show all properties to everyone but mark availability
         query = {}
+        
+        # For public users, only show available properties
+        # Since we don't have user context here, we'll show all but frontend will filter
+        # Actually, let's filter only available properties for non-admin views
+        # But since we don't know if it's admin, let's just show all and let frontend handle?
+        # Better: Return all properties with availability status
         
         if property_type:
             query['type'] = property_type
@@ -280,47 +279,24 @@ def get_all_properties():
         ).sort('createdAt', -1))
         
         # Convert ObjectId and add image URLs
-        result_properties = []
         for prop in properties:
             prop['_id'] = str(prop['_id'])
-            
-            # Handle main image URL
             if prop.get('images', {}).get('main'):
-                # Check if main image exists (not None)
-                if prop['images']['main'] is not None:
-                    prop['images']['main'] = f"/api/properties/image/{prop['_id']}?type=main"
-                else:
-                    prop['images']['main'] = None
-            
-            # Handle gallery images
+                prop['images']['main'] = f"/api/properties/image/{prop['_id']}?type=main"
             if prop.get('images', {}).get('gallery'):
-                gallery_count = len(prop['images']['gallery'])
-                if gallery_count > 0:
-                    prop['images']['gallery'] = [
-                        f"/api/properties/image/{prop['_id']}?type=gallery&index={i}" 
-                        for i in range(gallery_count)
-                    ]
-                else:
-                    prop['images']['gallery'] = []
-            else:
-                prop['images']['gallery'] = []
-            
-            # Ensure available field exists
-            if 'available' not in prop:
-                prop['available'] = True
-                
-            result_properties.append(prop)
+                prop['images']['gallery'] = [
+                    f"/api/properties/image/{prop['_id']}?type=gallery&index={i}" 
+                    for i in range(len(prop['images']['gallery']))
+                ]
         
         return jsonify({
             'success': True,
-            'count': len(result_properties),
-            'properties': result_properties
+            'count': len(properties),
+            'properties': properties
         }), 200
         
     except Exception as e:
         print(f"Error getting properties: {str(e)}")
-        import traceback
-        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @properties_bp.route('/<property_id>', methods=['GET'])
@@ -388,26 +364,6 @@ def toggle_availability(property_id):
             "message": f"Property {'available' if new_status else 'unavailable'} now",
             "available": new_status
         }), 200
-        
-# Add to server.py temporarily
-@app.route('/api/debug/properties', methods=['GET'])
-def debug_properties():
-    try:
-        properties = list(db.properties.find({}))
-        result = []
-        for prop in properties:
-            result.append({
-                '_id': str(prop['_id']),
-                'title': prop.get('title'),
-                'available': prop.get('available', True),
-                'has_images': prop.get('images') is not None
-            })
-        return jsonify({
-            'count': len(result),
-            'properties': result
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
         
     except Exception as e:
         print(f"Error toggling availability: {str(e)}")
