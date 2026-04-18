@@ -64,13 +64,13 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navLinks">
                     <li class="nav-item">
                         <a class="nav-link" href="index.html">
                             <i class="fas fa-home me-1"></i> Home
                         </a>
                     </li>
-                    <li id="authLinks" class="nav-item"></li>
+                    
                 </ul>
             </div>
         </div>
@@ -192,6 +192,17 @@
                                         <p class="mt-2 mb-0"><strong>₹<span id="modalPrice"></span></strong>/month</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h2 id="modalPropertyTitle" style="color: var(--primary-color); margin: 0;"></h2>
+                                    <div id="availabilityStatus"></div>
+                                </div>
+                                <p class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-2"></i>
+                                    <span id="modalLocation"></span>
+                                </p>
                             </div>
 
                             <!-- Amenities -->

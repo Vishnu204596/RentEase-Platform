@@ -7,7 +7,8 @@
   <title>Register - RentEase</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,7 +22,7 @@
       padding: 3rem 1rem;
       background: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
     }
-    
+
     .register-card {
       background: white;
       border-radius: 20px;
@@ -31,32 +32,33 @@
       width: 100%;
       border: 1px solid var(--neutral-200);
     }
-    
+
     .register-card h2 {
       color: var(--neutral-800);
       font-weight: 700;
       margin-bottom: 0.5rem;
       text-align: center;
     }
-    
+
     .register-card .subtitle {
       text-align: center;
       color: var(--neutral-500);
       margin-bottom: 2rem;
     }
-    
+
     .form-group {
       margin-bottom: 1.25rem;
     }
-    
+
     .form-group label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 600;
       color: var(--neutral-700);
     }
-    
-    .form-control, .form-select {
+
+    .form-control,
+    .form-select {
       width: 100%;
       padding: 0.75rem 1rem;
       border: 2px solid var(--neutral-200);
@@ -64,13 +66,14 @@
       font-size: 1rem;
       transition: all 0.3s ease;
     }
-    
-    .form-control:focus, .form-select:focus {
+
+    .form-control:focus,
+    .form-select:focus {
       border-color: var(--primary-color);
       outline: none;
       box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
     }
-    
+
     .btn-register {
       width: 100%;
       background: var(--gradient-primary);
@@ -84,28 +87,28 @@
       transition: all 0.3s ease;
       margin-top: 0.5rem;
     }
-    
+
     .btn-register:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
     }
-    
+
     .login-link {
       text-align: center;
       margin-top: 1.5rem;
       color: var(--neutral-600);
     }
-    
+
     .login-link a {
       color: var(--primary-color);
       text-decoration: none;
       font-weight: 600;
     }
-    
+
     .login-link a:hover {
       text-decoration: underline;
     }
-    
+
     .info-note {
       background: #e0f2fe;
       padding: 0.75rem;
@@ -115,16 +118,16 @@
       color: #0369a1;
       text-align: center;
     }
-    
+
     .row {
       display: flex;
       gap: 1rem;
     }
-    
+
     .row .form-group {
       flex: 1;
     }
-    
+
     @media (max-width: 768px) {
       .row {
         flex-direction: column;
@@ -149,13 +152,13 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0" id="navLinks">
                     <li class="nav-item">
                         <a class="nav-link" href="index.html">
                             <i class="fas fa-home me-1"></i> Home
                         </a>
                     </li>
-                    <li id="authLinks" class="nav-item"></li>
+                    
                 </ul>
             </div>
         </div>
@@ -167,60 +170,69 @@
     <div class="register-card">
       <h2>Create Account</h2>
       <p class="subtitle">Join RentEase as a Tenant</p>
-      
+
       <form id="registerForm">
         <div class="form-group">
           <label for="name">Full Name</label>
           <input type="text" id="name" class="form-control" placeholder="Enter your full name" required>
         </div>
-        
+
         <div class="form-group">
           <label for="email">Email Address</label>
           <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
         </div>
-        
+
         <div class="row">
           <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" class="form-control" placeholder="Create password" required>
           </div>
-          
+
           <div class="form-group">
             <label for="confirmPassword">Confirm Password</label>
             <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm password" required>
           </div>
         </div>
-        
+
         <div class="row">
           <div class="form-group">
             <label for="phone">Phone Number</label>
             <input type="tel" id="phone" class="form-control" placeholder="Enter phone number" required>
           </div>
-          
+
           <div class="form-group">
             <label for="alternatePhone">Alternate Phone (Optional)</label>
             <input type="tel" id="alternatePhone" class="form-control" placeholder="Alternate contact number">
           </div>
         </div>
-        
+
         <div class="form-group">
           <label for="address">Address</label>
           <textarea id="address" class="form-control" rows="2" placeholder="Enter your address"></textarea>
         </div>
-        
-        <button type="submit" class="btn-register">
+
+        <div class="form-group">
+          <div class="terms-checkbox">
+            <input type="checkbox" id="termsCheckbox" required>
+            <label for="termsCheckbox" class="terms-label">
+              I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms & Conditions</a> and
+              <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-register" id="registerBtn">
           <i class="fas fa-user-plus me-2"></i> Register as Tenant
         </button>
-      </form>
-      
-      <div class="login-link">
-        Already have an account? <a href="login.html">Login here</a>
-      </div>
-      
-      <div class="info-note">
-        <i class="fas fa-info-circle"></i> Note: Only tenant accounts can be created here. 
-        Admin accounts are created manually by system administrators.
-      </div>
+
+        <div class="login-link">
+          Already have an account? <a href="login.html">Login here</a>
+        </div>
+
+        <div class="info-note">
+          <i class="fas fa-info-circle"></i> Note: Only tenant accounts can be created here.
+          Admin accounts are created manually by system administrators.
+        </div>
     </div>
   </section>
 
@@ -252,13 +264,13 @@
         <p><i class="fas fa-envelope"></i> support@rentease.com</p>
       </div>
     </div>
-        <div class="footer-bottom">
-            <p>&copy; <span id="currentYear"></span> RentEase. All Rights Reserved.</p>
-        </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="currentYear"></span> RentEase. All Rights Reserved.</p>
+    </div>
 
-        <script>
-            document.getElementById('currentYear').innerHTML = new Date().getFullYear();
-        </script>
+    <script>
+      document.getElementById('currentYear').innerHTML = new Date().getFullYear();
+    </script>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -267,15 +279,15 @@
   <script>
     document.getElementById('registerForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      
+
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
-      
+
       if (password !== confirmPassword) {
         alert('Passwords do not match!');
         return;
       }
-      
+
       const userData = {
         name: document.getElementById('name').value,
         email: document.getElementById('email').value,
@@ -285,7 +297,7 @@
         address: document.getElementById('address').value,
         role: 'tenant'  // Force role to tenant only
       };
-      
+
       handleRegister(userData);
     });
   </script>
