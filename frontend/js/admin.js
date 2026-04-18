@@ -1,15 +1,17 @@
-// frontend/js/admin.js
 function getCurrentUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 
-const user = getCurrentUser();
-if (!user || user.role !== 'admin') {
-    showToast('Admin access required', 'error');
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1500);
+// ONLY check admin access if we're on admin.html
+if (window.location.pathname.includes('admin.html')) {
+    const user = getCurrentUser();
+    if (!user || user.role !== 'admin') {
+        showToast('Admin access required', 'error');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+    }
 }
 
 // Tamil Nadu Locations
