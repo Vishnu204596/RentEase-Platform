@@ -265,15 +265,12 @@ function displayProperties(properties) {
         return;
     }
     
+    container.innerHTML = filtered.map(property => {
         let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
-        if (property.images) {
-            if (typeof property.images.main === 'string') {
-                imageUrl = property.images.main;
-            } else if (property.images.main && property.images.main.url) {
-                imageUrl = property.images.main.url;
-            }
+        if (property.images && property.images.main) {
+            imageUrl = property.images.main;
         }
-
+        
         const hasPending = userPendingBookings.includes(property._id);
         const isAvailable = property.available === true;
         
