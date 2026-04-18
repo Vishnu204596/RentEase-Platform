@@ -76,7 +76,6 @@ async function loadUserPendingBookings() {
         const data = await response.json();
         
         if (data.success) {
-            // Store only pending bookings
             userPendingBookings = data.bookings
                 .filter(b => b.status === 'pending')
                 .map(b => b.propertyId);
@@ -91,7 +90,9 @@ async function loadUserPendingBookings() {
 window.logout = function() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    showToast('Logged out successfully!', 'info');
+    if (typeof showToast === 'function') {
+        showToast('Logged out successfully!', 'info');
+    }
     setTimeout(() => {
         window.location.href = 'index.html';
     }, 1000);
@@ -103,13 +104,11 @@ function updateNavbar() {
     
     if (!navLinks) return;
     
-    // Remove existing dynamic links (keep only the Home link)
     while (navLinks.children.length > 1) {
         navLinks.removeChild(navLinks.lastChild);
     }
     
     if (user && isLoggedIn()) {
-        // Add Dashboard link
         const dashboardLink = document.createElement('li');
         dashboardLink.className = 'nav-item';
         dashboardLink.innerHTML = `
@@ -119,7 +118,6 @@ function updateNavbar() {
         `;
         navLinks.appendChild(dashboardLink);
         
-        // Add User Dropdown
         const dropdownItem = document.createElement('li');
         dropdownItem.className = 'nav-item dropdown';
         dropdownItem.innerHTML = `
@@ -152,7 +150,6 @@ function updateNavbar() {
         `;
         navLinks.appendChild(loginLink);
         
-        // Add Register link
         const registerLink = document.createElement('li');
         registerLink.className = 'nav-item';
         registerLink.innerHTML = `
@@ -173,10 +170,10 @@ async function loadProperties() {
     try {
         const response = await fetch(`${API_BASE}/properties/`);
         const data = await response.json();
-
-        console.log('Properties fetched:', data);
         
-        if (data.success && data.properties.length > 0) {
+        console.log('Properties loaded:', data);
+        
+        if (data.success && data.properties && data.properties.length > 0) {
             displayProperties(data.properties);
         } else {
             container.innerHTML = `
@@ -199,52 +196,16 @@ async function loadProperties() {
     }
 }
 
-// Global editProperty function that works from any page
-window.editProperty = async function(propertyId) {
-    const user = getCurrentUser();
-    if (!user || user.role !== 'admin') {
-        showToast('Admin access required', 'error');
-        return;
-    }
-    
-    sessionStorage.setItem('editPropertyId', propertyId);
-    
-    showToast('Redirecting to admin panel...', 'info');
-    setTimeout(() => {
-        window.location.href = 'admin.html';
-    }, 1000);
-};
-
-function checkForPendingEdit() {
-    const editId = sessionStorage.getItem('editPropertyId');
-    if (editId && window.location.pathname.includes('admin.html')) {
-        sessionStorage.removeItem('editPropertyId');
-        // Small delay to ensure admin.js is loaded
-        setTimeout(() => {
-            if (typeof editProperty === 'function') {
-                editProperty(editId);
-            } else {
-                console.error('editProperty function not found');
-                showToast('Error opening edit form', 'error');
-            }
-        }, 500);
-    }
-}
-
-// Call this when admin page loads
-if (window.location.pathname.includes('admin.html')) {
-    document.addEventListener('DOMContentLoaded', checkForPendingEdit);
-}
-
 function displayProperties(properties) {
     const container = document.getElementById('propertyContainer');
+    if (!container) return;
+    
     const typeFilter = document.getElementById('typeFilter')?.value || '';
     const bedrooms = document.getElementById('bedrooms')?.value || '';
     const priceMin = parseInt(document.getElementById('priceMin')?.value) || 0;
     const priceMax = parseInt(document.getElementById('priceMax')?.value) || Infinity;
     const searchTerm = document.getElementById('searchBox')?.value.toLowerCase() || '';
     
-    // Show ALL properties (both available and unavailable)
     let filtered = properties.filter(property => {
         if (typeFilter && property.type !== typeFilter) return false;
         if (bedrooms && property.bedrooms < parseInt(bedrooms)) return false;
@@ -385,24 +346,18 @@ async function addDefaultPropertiesIfNeeded() {
     }
 }
 
-// Refresh pending bookings and properties when needed
 async function refreshUserBookings() {
     await loadUserPendingBookings();
     loadProperties();
 }
 
-// Make refresh function available globally for booking-modal
 window.refreshUserBookings = refreshUserBookings;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Main.js DOMContentLoaded fired');
     updateNavbar();
-    
-    // Load user's pending bookings first
     await loadUserPendingBookings();
-    
-    // Then load properties
     await loadProperties();
-    
     addDefaultPropertiesIfNeeded();
     
     const filterElements = ['typeFilter', 'bedrooms', 'priceMin', 'priceMax', 'searchBox'];
