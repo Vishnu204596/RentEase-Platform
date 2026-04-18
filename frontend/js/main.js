@@ -173,6 +173,8 @@ async function loadProperties() {
     try {
         const response = await fetch(`${API_BASE}/properties/`);
         const data = await response.json();
+
+        console.log('Properties fetched:', data);
         
         if (data.success && data.properties.length > 0) {
             displayProperties(data.properties);
@@ -263,12 +265,15 @@ function displayProperties(properties) {
         return;
     }
     
-    container.innerHTML = filtered.map(property => {
         let imageUrl = 'https://via.placeholder.com/400x250?text=No+Image';
-        if (property.images && property.images.main) {
-            imageUrl = property.images.main;
+        if (property.images) {
+            if (typeof property.images.main === 'string') {
+                imageUrl = property.images.main;
+            } else if (property.images.main && property.images.main.url) {
+                imageUrl = property.images.main.url;
+            }
         }
-        
+
         const hasPending = userPendingBookings.includes(property._id);
         const isAvailable = property.available === true;
         
