@@ -1,44 +1,4 @@
-// frontend/js/main.js
-// Use relative paths consistently (not hardcoded URL)
-const API_BASE = ''; // Empty means use relative paths
-
-// Or if you need absolute URL, use window.location.origin
-// const API_BASE = window.location.origin;
-
-async function loadProperties() {
-    const container = document.getElementById('propertyContainer');
-    if (!container) return;
-    
-    container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Loading properties...</p></div>';
-    
-    try {
-        // Use relative path consistently
-        const response = await fetch('/api/properties/');
-        const data = await response.json();
-        
-        if (data.success && data.properties.length > 0) {
-            displayProperties(data.properties);
-        } else {
-            container.innerHTML = `
-                <div class="no-properties">
-                    <i class="fas fa-home fa-3x mb-3" style="color: #1e3a8a;"></i>
-                    <h4>No properties available yet</h4>
-                    <p>Check back soon for new listings!</p>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('Error loading properties:', error);
-        container.innerHTML = `
-            <div class="no-properties">
-                <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #dc2626;"></i>
-                <h4>Connection Error</h4>
-                <p>Make sure the backend server is running</p>
-                <p class="text-muted small">Error: ${error.message}</p>
-            </div>
-        `;
-    }
-}
+const API_BASE = 'https://rentease-platform.onrender.com/api';
 
 const DEFAULT_PROPERTIES = [
     {
@@ -201,6 +161,39 @@ function updateNavbar() {
             </a>
         `;
         navLinks.appendChild(registerLink);
+    }
+}
+
+async function loadProperties() {
+    const container = document.getElementById('propertyContainer');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Loading properties...</p></div>';
+    
+    try {
+        const response = await fetch(`${API_BASE}/properties/`);
+        const data = await response.json();
+        
+        if (data.success && data.properties.length > 0) {
+            displayProperties(data.properties);
+        } else {
+            container.innerHTML = `
+                <div class="no-properties">
+                    <i class="fas fa-home fa-3x mb-3" style="color: #1e3a8a;"></i>
+                    <h4>No properties available yet</h4>
+                    <p>Check back soon for new listings!</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading properties:', error);
+        container.innerHTML = `
+            <div class="no-properties">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #dc2626;"></i>
+                <h4>Connection Error</h4>
+                <p>Make sure the backend server is running at ${API_BASE}</p>
+            </div>
+        `;
     }
 }
 

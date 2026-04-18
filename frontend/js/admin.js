@@ -1,17 +1,15 @@
+// frontend/js/admin.js
 function getCurrentUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
 }
 
-// ONLY check admin access if we're on admin.html
-if (window.location.pathname.includes('admin.html')) {
-    const user = getCurrentUser();
-    if (!user || user.role !== 'admin') {
-        showToast('Admin access required', 'error');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
-    }
+const user = getCurrentUser();
+if (!user || user.role !== 'admin') {
+    showToast('Admin access required', 'error');
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1500);
 }
 
 // Tamil Nadu Locations
@@ -64,12 +62,37 @@ async function loadProperties() {
         const response = await fetch('/api/properties/');
         const data = await response.json();
         
+        console.log('Properties response:', data); // Debug log
+        
         if (data.success) {
-            document.getElementById('totalProperties').innerText = data.count || 0;
-            displayPropertiesTable(data.properties || []);
+            const properties = data.properties || [];
+            const totalCount = data.count || properties.length;
+            document.getElementById('totalProperties').innerText = totalCount;
+            displayPropertiesTable(properties);
+        } else {
+            console.error('Failed to load properties:', data.error);
+            document.getElementById('totalProperties').innerText = '0';
+            document.getElementById('propertiesTable').innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger">
+                        Error loading properties: ${data.error || 'Unknown error'}
+                    </td>
+                </tr>
+            `;
         }
     } catch (error) {
-        showToast(error.message, 'error');
+        console.error('Error in loadProperties:', error);
+        document.getElementById('totalProperties').innerText = '0';
+        document.getElementById('propertiesTable').innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-danger">
+                    Failed to load properties. Check if backend is running.
+                </td>
+            </tr>
+        `;
+        if (typeof showToast === 'function') {
+            showToast('Failed to load properties: ' + error.message, 'error');
+        }
     }
 }
 
@@ -81,8 +104,9 @@ function displayPropertiesTable(properties) {
     }
     
     tbody.innerHTML = properties.map(prop => {
+        // Handle image URL properly
         let imageUrl = 'https://via.placeholder.com/50?text=No+Img';
-        if (prop.images && prop.images.main) {
+        if (prop.images && prop.images.main && prop.images.main !== 'null' && prop.images.main !== 'undefined') {
             imageUrl = prop.images.main;
         }
         
