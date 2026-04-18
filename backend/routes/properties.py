@@ -389,6 +389,26 @@ def toggle_availability(property_id):
             "available": new_status
         }), 200
         
+# Add to server.py temporarily
+@app.route('/api/debug/properties', methods=['GET'])
+def debug_properties():
+    try:
+        properties = list(db.properties.find({}))
+        result = []
+        for prop in properties:
+            result.append({
+                '_id': str(prop['_id']),
+                'title': prop.get('title'),
+                'available': prop.get('available', True),
+                'has_images': prop.get('images') is not None
+            })
+        return jsonify({
+            'count': len(result),
+            'properties': result
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+        
     except Exception as e:
         print(f"Error toggling availability: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
