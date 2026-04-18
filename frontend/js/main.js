@@ -309,6 +309,53 @@ window.clearFilters = function() {
     loadProperties();
 };
 
+// Make editProperty available globally for admin on index page
+window.editProperty = async function(propertyId) {
+    const user = getCurrentUser();
+    if (!user || user.role !== 'admin') {
+        if (typeof showToast === 'function') {
+            showToast('Admin access required', 'error');
+        }
+        return;
+    }
+    
+    // Store the property ID to edit in session storage
+    sessionStorage.setItem('editPropertyId', propertyId);
+    
+    if (typeof showToast === 'function') {
+        showToast('Redirecting to admin panel...', 'info');
+    }
+    
+    // Redirect to admin page where edit modal will open automatically
+    setTimeout(() => {
+        window.location.href = 'admin.html';
+    }, 1000);
+};
+
+window.checkForPendingEdit = function() {
+    const editId = sessionStorage.getItem('editPropertyId');
+    if (editId && window.location.pathname.includes('admin.html')) {
+        sessionStorage.removeItem('editPropertyId');
+        // Small delay to ensure admin.js is fully loaded
+        setTimeout(() => {
+            if (typeof window.editPropertyInAdmin === 'function') {
+                window.editPropertyInAdmin(editId);
+            } else if (typeof editProperty === 'function') {
+                editProperty(editId);
+            } else {
+                console.error('Edit function not found');
+                if (typeof showToast === 'function') {
+                    showToast('Error opening edit form', 'error');
+                }
+            }
+        }, 500);
+    }
+};
+
+if (window.location.pathname.includes('admin.html')) {
+    document.addEventListener('DOMContentLoaded', window.checkForPendingEdit);
+}
+
 async function addDefaultPropertiesIfNeeded() {
     try {
         const response = await fetch(`${API_BASE}/properties/`);
