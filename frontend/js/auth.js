@@ -75,6 +75,16 @@ function updateNavbar() {
     }
 }
 
+window.logout = function() {
+    console.log('Logout called'); // Debug
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    showToast('Logged out successfully!', 'success');
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 1000);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     updateNavbar();
 });
